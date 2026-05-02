@@ -3,10 +3,9 @@ import axios from "axios"
 import { FaClipboardList } from "react-icons/fa"
 import { useNavigate } from "react-router-dom"
 
-
 function EmployeePage() {
 
-  const navigate = useNavigate()// ✅ DOIT ÊTRE ICI
+  const navigate = useNavigate() // ✅ bien placé
 
   const [form, setForm] = useState({
     firstName: "",
@@ -24,26 +23,19 @@ function EmployeePage() {
   // 🔐 PROTECTION PAGE
   useEffect(() => {
     const isAuth = localStorage.getItem("isAuth")
-
     if (isAuth !== "true") {
       navigate("/")
     }
   }, [navigate])
 
-    // 🔥 Supprimé employés
-    const handleDelete = async (id) => {
-        try {
-          await axios.delete(`http://localhost:5000/api/employees/${id}`)
-          fetchEmployees() // refresh liste
-        } catch (err) {
-          console.log(err)
-        }
-      }
-
-  // 🔥 Charger employés
+  // 🔥 Charger employés (CORRIGÉ)
   const fetchEmployees = async () => {
-    const res = await axios.get("http://localhost:5000/api/employees")
-    setEmployees(res.data)
+    try {
+      const res = await axios.get("http://localhost:5000/api/employees")
+      setEmployees(res.data)
+    } catch (err) {
+      console.error("Erreur fetch employés :", err)
+    }
   }
 
   useEffect(() => {
@@ -55,24 +47,53 @@ function EmployeePage() {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
-  // 🔥 Submit
+  // 🔥 SUPPRESSION (CORRIGÉ)
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/employees/${id}`)
+      fetchEmployees()
+    } catch (err) {
+      console.error("Erreur suppression :", err)
+      alert("Erreur lors de la suppression ❌")
+    }
+  }
+
+  // 🔥 SUBMIT (CORRIGÉ)
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    await axios.post("http://localhost:5000/api/employees", form)
+    try {
+      // ✅ Validation simple
+      if (!form.firstName || !form.lastName) {
+        return alert("Remplis au moins prénom et nom")
+      }
 
-    setForm({
-      firstName: "",
-      lastName: "",
-      email: "",
-      phone: "",
-      position: "",
-      department: "",
-      hireDate: "",
-      address: ""
-    })
+      const res = await axios.post(
+        "http://localhost:5000/api/employees",
+        form
+      )
 
-    fetchEmployees()
+      console.log("Employé ajouté :", res.data)
+
+      // 🔄 Reset form
+      setForm({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        position: "",
+        department: "",
+        hireDate: "",
+        address: ""
+      })
+
+      // 🔄 Refresh liste
+      fetchEmployees()
+
+    } catch (err) {
+      console.error("Erreur ajout employé :", err)
+      alert("Erreur lors de l'enregistrement ❌")
+    }
   }
 
   return (
@@ -80,18 +101,17 @@ function EmployeePage() {
   
       {/* 🔥 HEADER */}
       <div className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white p-6 rounded-2xl shadow mb-8">
-    <div className="flex items-center gap-4">  
-      <div className="bg-blue-600 text-white p-3 rounded-xl">
-              <FaClipboardList />
-      </div>
-        <h2 className="text-xl font-semibold">Espace Administrateur</h2>
+        <div className="flex items-center gap-4">  
+          <div className="bg-blue-600 text-white p-3 rounded-xl">
+            <FaClipboardList />
+          </div>
+          <h2 className="text-xl font-semibold">Espace Administrateur</h2>
         </div>
         <p className="text-sm opacity-90">
           Enregistrement des nouveaux employés
         </p>
       </div>
       
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
   
         {/* ===================== */}
@@ -156,42 +176,37 @@ function EmployeePage() {
           ) : (
             <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
   
-  {employees.map((emp) => (
-  <div
-    key={emp._id}
-    className="p-4 border rounded-xl hover:shadow-sm transition bg-gray-50 flex justify-between items-center"
-  >
+              {employees.map((emp) => (
+                <div
+                  key={emp._id}
+                  className="p-4 border rounded-xl hover:shadow-sm transition bg-gray-50 flex justify-between items-center"
+                >
+                  <div>
+                    <p className="font-medium text-gray-800">
+                      {emp.firstName} {emp.lastName}
+                    </p>
 
-    {/* INFOS */}
-    <div>
-      <p className="font-medium text-gray-800">
-        {emp.firstName} {emp.lastName}
-      </p>
+                    <p className="text-sm text-gray-500">
+                      {emp.position} • {emp.department}
+                    </p>
 
-      <p className="text-sm text-gray-500">
-        {emp.position} • {emp.department}
-      </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      📧 {emp.email}
+                    </p>
+                  </div>
 
-      <p className="text-xs text-gray-400 mt-1">
-        📧 {emp.email}
-      </p>
-    </div>
-
-
-    {/* 🔥 BOUTON SUPPRIMER */}
-    <button
-      onClick={() => {
-        if (window.confirm("Supprimer cet employé ?")) {
-          handleDelete(emp._id)
-        }
-      }}
-      className="bg-red-100 text-red-600 px-3 py-1 rounded-lg hover:bg-red-200 transition"
-    >
-      Supprimer
-    </button>
-
-  </div>
-))}
+                  <button
+                    onClick={() => {
+                      if (window.confirm("Supprimer cet employé ?")) {
+                        handleDelete(emp._id)
+                      }
+                    }}
+                    className="bg-red-100 text-red-600 px-3 py-1 rounded-lg hover:bg-red-200 transition"
+                  >
+                    Supprimer
+                  </button>
+                </div>
+              ))}
   
             </div>
           )}

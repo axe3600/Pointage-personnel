@@ -3,32 +3,58 @@ import Employee from "../models/Employee.js"
 
 const router = express.Router()
 
-// 🔥 AJOUTER EMPLOYÉ
-router.post("/", async (req, res) => {
+// 🔥 GET
+router.get("/", async (req, res) => {
   try {
-    const employee = new Employee(req.body)
-    await employee.save()
-
-    res.json({ message: "Employé enregistré", employee })
+    const data = await Employee.find()
+    res.json(data)
   } catch (err) {
-    res.status(500).json({ error: err.message })
+    console.log(err)
+    res.status(500).json({ message: "Erreur récupération" })
   }
 })
 
-// ❌ SUPPRIMER UN EMPLOYÉ
-router.delete("/:id", async (req, res) => {
-    try {
-      await Employee.findByIdAndDelete(req.params.id)
-      res.json({ message: "Employé supprimé" })
-    } catch (err) {
-      res.status(500).json({ message: err.message })
-    }
-  })
+// 🔥 POST (CORRIGÉ + SÉCURISÉ)
+router.post("/", async (req, res) => {
+  try {
 
-// 🔥 LISTER EMPLOYÉS
-router.get("/", async (req, res) => {
-  const employees = await Employee.find().sort({ createdAt: -1 })
-  res.json(employees)
+    console.log("BODY RECU 👉", req.body) // 🔥 DEBUG IMPORTANT
+
+    // ✅ Validation minimale
+    if (!req.body.firstName || !req.body.lastName) {
+      return res.status(400).json({ message: "Champs obligatoires manquants" })
+    }
+
+    const newEmployee = new Employee({
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      email: req.body.email || "",
+      phone: req.body.phone || "",
+      position: req.body.position || "",
+      department: req.body.department || "",
+      hireDate: req.body.hireDate || "",
+      address: req.body.address || ""
+    })
+
+    await newEmployee.save()
+
+    res.status(201).json(newEmployee)
+
+  } catch (err) {
+    console.log("ERREUR BACKEND ❌", err)
+    res.status(500).json({ message: "Erreur serveur" })
+  }
 })
 
-export default router;
+// 🔥 DELETE
+router.delete("/:id", async (req, res) => {
+  try {
+    await Employee.findByIdAndDelete(req.params.id)
+    res.json({ message: "Supprimé" })
+  } catch (err) {
+    console.log(err)
+    res.status(500).json({ message: "Erreur suppression" })
+  }
+})
+
+export default router
