@@ -3,83 +3,86 @@ import Pointage from "../models/Pointage.js"
 
 const router = express.Router()
 
-// 🔥 GET ALL
+// 🔥 GET ALL (inchangé)
 router.get("/", async (req, res) => {
   const data = await Pointage.find().sort({ createdAt: -1 })
   res.json(data)
 })
 
-// 🔥 ARRIVÉE
-router.post("/arrival", async (req, res) => {
 
-  const { firstName } = req.body
+// 🔥 SCAN INTELLIGENT (ARRIVÉE / DÉPART AUTO)
+router.post("/scan", async (req, res) => {
+
+  // ✅ on reçoit matricule
+  const { matricule } = req.body
+
+  // ✅ récupérer IP du téléphone
+  const ip =
+    req.headers["x-forwarded-for"] ||
+    req.socket.remoteAddress
 
   const now = new Date()
+  const today = now.toLocaleDateString()
 
-  const newPointage = new Pointage({
-    firstName,
-    date: now.toLocaleDateString(),
-    arrival: now.toLocaleTimeString(),
-    departure: "-",
-    hours: "-",
-    status: "Présent",
-    category: "pointage",
-    reason: "QR"
-  })
-
-  await newPointage.save()
-
-  res.json({ message: "Arrivée enregistrée" })
-})
-
-// 🔥 DÉPART
-router.post("/departure", async (req, res) => {
-
-  const { firstName } = req.body
-
-  const last = await Pointage.findOne({
-    firstName,
-    departure: "-"
+  // 🔎 chercher si déjà pointé aujourd'hui avec cette IP
+  const existing = await Pointage.findOne({
+    matricule,
+    date: today,
+    ipAddress: ip,
+    departure: "-" // encore présent
   }).sort({ createdAt: -1 })
 
-  if (!last) {
-    return res.status(400).json({ message: "Pas d'arrivée trouvée" })
-  }
 
-  const now = new Date()
+  // =========================
+  // 🔥 CAS 1 → ARRIVÉE
+  // =========================
+  if (!existing) {
 
-  last.departure = now.toLocaleTimeString()
-
-  const diff = (new Date() - last.createdAt) / (1000 * 60 * 60)
-  last.hours = diff.toFixed(2) + "h"
-
-  await last.save()
-
-  res.json({ message: "Départ enregistré" })
-})
-
-// 🔥 SCAN QR
-router.post("/scan", (req, res) => {
-    const { name, type } = req.body
-  
-    const now = new Date()
-  
-    const formatTime = (date) =>
-      date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-  
-    const pointage = {
-      category: "pointage",
-      date: now.toLocaleDateString(),
-      firstName: name,
+    const newPointage = new Pointage({
+      matricule,
+      ipAddress: ip,
+      firstName: "", // optionnel si tu veux relier plus tard
       lastName: "",
-      arrival: type === "arrival" ? formatTime(now) : "-",
-      departure: type === "departure" ? formatTime(now) : "-",
+      date: today,
+      arrival: now.toLocaleTimeString(),
+      departure: "-",
       hours: "-",
       status: "Présent",
+      category: "pointage",
       reason: "QR Scan"
-    }
-  
-    res.json(pointage)
+    })
+
+    await newPointage.save()
+
+    return res.json({
+      type: "arrival",
+      message: "✅ Arrivée enregistrée",
+      data: newPointage
+    })
+  }
+
+
+  // =========================
+  // 🔥 CAS 2 → DÉPART AUTO
+  // =========================
+  existing.departure = now.toLocaleTimeString()
+
+  const diff = (new Date() - existing.createdAt) / (1000 * 60 * 60)
+  existing.hours = diff.toFixed(2) + "h"
+
+  await existing.save()
+
+  res.json({
+    type: "departure",
+    message: "👋 Départ enregistré",
+    data: existing
   })
+})
+
+
+// 🔥 TEST
+router.get("/scan", (req, res) => {
+  res.json({ message: "Utilise POST pour scanner" })
+})
 
 export default router;

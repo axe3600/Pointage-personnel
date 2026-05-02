@@ -1,10 +1,9 @@
 import express from "express"
-import mongoose from "mongoose"
 import cors from "cors"
+import mongoose from "mongoose"
 import dotenv from "dotenv"
-
-// ✅ IMPORT ROUTE ICI Logique API
 import pointageRoutes from "./routes/pointageRoutes.js"
+import employeeRoutes from "./routes/employeeRoutes.js"
 
 dotenv.config()
 
@@ -13,15 +12,27 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
-// ✅ UTILISATION ROUTE ICI
+// 🔥 ROUTE
 app.use("/api/pointages", pointageRoutes)
+app.use("/api/employees", employeeRoutes)
 
-// 🔗 Connexion DB
+// 🔥 TEST ROUTE SIMPLE
+app.get("/", (req, res) => {
+  res.send("API fonctionne 🚀")
+})
+
+// 🔥 DEBUG ENV
+console.log("MONGO_URI =", process.env.MONGO_URI)
+
+// 🔥 CONNEXION MONGO
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connecté"))
-  .catch(err => console.log(err))
+  .catch(err => console.log("Erreur Mongo:", err))
 
-// 🚀 Lancement serveur
-app.listen(5000, () => {
-  console.log("Serveur lancé sur port 5000")
-});
+// 🔥 PORT
+const PORT = process.env.PORT || 5000
+
+// ✅ IMPORTANT (MANQUAIT)
+app.listen(PORT, () => {
+  console.log(`Serveur lancé sur http://localhost:${PORT}`)
+})
