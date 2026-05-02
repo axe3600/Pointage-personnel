@@ -9,19 +9,24 @@ dotenv.config()
 
 const app = express()
 
-app.use(cors())
+// ✅ CORS (UNE SEULE FOIS)
+app.use(cors({
+  origin: "*" // ⚠️ en prod tu peux limiter à ton domaine Vercel
+}))
+
+// ✅ Parser JSON
 app.use(express.json())
 
-// 🔥 ROUTE
+// 🔥 ROUTES
 app.use("/api/pointages", pointageRoutes)
 app.use("/api/employees", employeeRoutes)
 
-// 🔥 TEST ROUTE SIMPLE
+// 🔥 TEST
 app.get("/", (req, res) => {
   res.send("API fonctionne 🚀")
 })
 
-// 🔥 DEBUG ENV
+// 🔥 DEBUG (évite d'afficher en prod)
 console.log("MONGO_URI =", process.env.MONGO_URI)
 
 // 🔥 CONNEXION MONGO
@@ -32,7 +37,6 @@ mongoose.connect(process.env.MONGO_URI)
 // 🔥 PORT
 const PORT = process.env.PORT || 5000
 
-// ✅ IMPORTANT (MANQUAIT)
 app.listen(PORT, () => {
   console.log(`Serveur lancé sur http://localhost:${PORT}`)
 })

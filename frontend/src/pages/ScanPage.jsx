@@ -15,8 +15,9 @@ function ScanPage() {
 
     try {
 
+      // 🔥 IMPORTANT : utiliser URL BACKEND (Render)
       const res = await axios.post(
-        "http://localhost:5000/api/pointages/scan",
+        "https://pointage-personnel.onrender.com/api/pointages/scan",
         { matricule }
       )
 
@@ -24,18 +25,18 @@ function ScanPage() {
       setMessage(res.data.message)
 
     } catch (err) {
-      console.log(err)
+      console.log("Erreur scan :", err)
       setMessage("❌ Erreur serveur")
     }
   }
 
   return (
-    <div className="h-screen flex items-center justify-center bg-blue-50">
+    <div className="h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-200">
 
-      <div className="bg-white p-6 rounded-2xl shadow w-[320px]">
+      <div className="bg-white p-6 rounded-2xl shadow-lg w-[320px]">
 
-        <h2 className="text-lg font-semibold mb-4 text-center">
-          Pointage employé
+        <h2 className="text-lg font-semibold mb-4 text-center text-gray-700">
+          📲 Pointage employé
         </h2>
 
         {/* 🔥 INPUT MATRICULE */}
@@ -44,20 +45,20 @@ function ScanPage() {
           placeholder="Matricule employé"
           value={matricule}
           onChange={(e) => setMatricule(e.target.value)}
-          className="w-full p-3 border rounded mb-4"
+          className="w-full p-3 border rounded-lg mb-4 focus:ring-2 focus:ring-indigo-400 outline-none"
         />
 
         {/* 🔥 UN SEUL BOUTON */}
         <button
           onClick={handleScan}
-          className="w-full bg-green-500 text-white p-3 rounded font-semibold"
+          className="w-full bg-indigo-500 hover:bg-indigo-600 text-white p-3 rounded-lg font-semibold transition"
         >
           Pointer
         </button>
 
         {/* 🔥 MESSAGE */}
         {message && (
-          <p className="text-center mt-4 text-sm text-green-600">
+          <p className="text-center mt-4 text-sm text-green-600 font-medium">
             {message}
           </p>
         )}
