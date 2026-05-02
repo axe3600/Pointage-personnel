@@ -68,4 +68,4 @@ function ScanPage() {
   )
 }
 
-export default ScanPage;
+export default ScanPage
