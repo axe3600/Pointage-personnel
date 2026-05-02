@@ -1,35 +1,32 @@
 import { useState } from "react"
+import axios from "axios"
 
 function ScanPage() {
 
-  const [name, setName] = useState("")
+  // ✅ matricule au lieu du nom
+  const [matricule, setMatricule] = useState("")
   const [message, setMessage] = useState("")
 
-  const handleScan = (type) => {
+  const handleScan = async () => {
 
-    if (!name) return alert("Entre ton nom")
+    if (!matricule) {
+      return alert("Entre ton matricule")
+    }
 
-    fetch("http://localhost:5000/api/pointages/scan", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ name, type })
-    })
-    .then(res => res.json())
-    .then(data => {
+    try {
 
-      // 🔥 Sauvegarde local
-      const saved = JSON.parse(localStorage.getItem("pointages")) || []
-      saved.push(data)
-      localStorage.setItem("pointages", JSON.stringify(saved))
-
-      setMessage(
-        type === "arrival"
-          ? `✅ Arrivée enregistrée à ${data.arrival}`
-          : `✅ Départ enregistré à ${data.departure}`
+      const res = await axios.post(
+        "http://localhost:5000/api/pointages/scan",
+        { matricule }
       )
-    })
+
+      // ✅ message dynamique (arrivée ou départ)
+      setMessage(res.data.message)
+
+    } catch (err) {
+      console.log(err)
+      setMessage("❌ Erreur serveur")
+    }
   }
 
   return (
@@ -38,40 +35,29 @@ function ScanPage() {
       <div className="bg-white p-6 rounded-2xl shadow w-[320px]">
 
         <h2 className="text-lg font-semibold mb-4 text-center">
-          Pointage rapide
+          Pointage employé
         </h2>
 
-        {/* NOM */}
+        {/* 🔥 INPUT MATRICULE */}
         <input
           type="text"
-          placeholder="Ton nom"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="w-full p-2 border rounded mb-4"
+          placeholder="Matricule employé"
+          value={matricule}
+          onChange={(e) => setMatricule(e.target.value)}
+          className="w-full p-3 border rounded mb-4"
         />
 
-        {/* BOUTONS */}
-        <div className="flex gap-2 mb-3">
+        {/* 🔥 UN SEUL BOUTON */}
+        <button
+          onClick={handleScan}
+          className="w-full bg-green-500 text-white p-3 rounded font-semibold"
+        >
+          Pointer
+        </button>
 
-          <button
-            onClick={() => handleScan("arrival")}
-            className="flex-1 bg-green-500 text-white p-2 rounded"
-          >
-            Arrivée
-          </button>
-
-          <button
-            onClick={() => handleScan("departure")}
-            className="flex-1 bg-black text-white p-2 rounded"
-          >
-            Départ
-          </button>
-
-        </div>
-
-        {/* MESSAGE */}
+        {/* 🔥 MESSAGE */}
         {message && (
-          <p className="text-center text-sm text-green-600">
+          <p className="text-center mt-4 text-sm text-green-600">
             {message}
           </p>
         )}

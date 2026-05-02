@@ -29,6 +29,17 @@ function Dashboard() {
     return saved ? JSON.parse(saved) : []
   })
 
+  // Pointage
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const saved = JSON.parse(localStorage.getItem("pointages")) || []
+      setPointages(saved)
+    }, 1000) // refresh chaque seconde
+  
+    return () => clearInterval(interval)
+  }, [])
+
+
   // 💾 SAVE
   useEffect(() => {
     localStorage.setItem("leaves", JSON.stringify(leaves))

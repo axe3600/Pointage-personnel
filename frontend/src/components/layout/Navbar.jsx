@@ -1,11 +1,14 @@
 import { useState } from "react"
 import { FaClipboardList } from "react-icons/fa"
 import LeaveModal from "../ui/LeaveModal"
+import { FaUserPlus } from "react-icons/fa"
+import { useNavigate } from "react-router-dom"
 
 function Navbar({ addLeave }) {
 
   // 🔥 Gestion ouverture popup
   const [open, setOpen] = useState(false)
+  const navigate = useNavigate()
 
   return (
     <>
@@ -29,6 +32,16 @@ function Navbar({ addLeave }) {
             </div>
           </div>
 
+
+  {/* 🔥 BOUTON GAUCHE (AJOUT EMPLOYÉ) */}
+            <button
+              onClick={() => navigate("/Enregistrement-Employe")}
+              className="bg-indigo-500 text-white p-4 rounded-lg hover:bg-indigo-600 transition"
+              title="Ajouter un employé"
+            >
+               <FaUserPlus />
+            </button>
+  
           {/* 🔹 Bouton ouverture modal */}
           <button
             onClick={() => setOpen(true)}
