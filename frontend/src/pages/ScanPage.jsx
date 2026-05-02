@@ -17,7 +17,7 @@ function ScanPage() {
 
       // 🔥 IMPORTANT : utiliser URL BACKEND (Render)
       const res = await axios.post(
-        "https://pointage-personnel.onrender.com/api/pointages/scan",
+        "https://pointage-personnel.onrender.com/api/pointages/scan", // ✅ CORRIGÉ
         { matricule }
       )
 
