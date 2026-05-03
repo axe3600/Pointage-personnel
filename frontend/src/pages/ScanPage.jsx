@@ -1,29 +1,52 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import axios from "axios"
 
 function ScanPage() {
 
   const [matricule, setMatricule] = useState("")
   const [message, setMessage] = useState("")
-  const [hasArrived, setHasArrived] = useState(false)
+  const [isDeparture, setIsDeparture] = useState(false)
 
-  const handleScan = async () => {
+  // 🔥 AUTO CHECK AU CHARGEMENT
+  useEffect(() => {
+
+    const checkDeparture = async () => {
+      try {
+        const res = await axios.post(
+          "https://pointage-personnel.onrender.com/api/pointages/scan",
+          {} // ❗ pas de matricule
+        )
+
+        if (res.data.type === "departure") {
+          setIsDeparture(true)
+          setMessage(`👋 Départ enregistré à ${res.data.departureTime}`)
+        }
+
+      } catch (err) {
+        console.log("Pas encore arrivé aujourd’hui")
+      }
+    }
+
+    checkDeparture()
+
+  }, [])
+
+  // 🔥 ARRIVÉE
+  const handleArrival = async () => {
+
+    if (!matricule) {
+      return alert("Entre ton matricule")
+    }
 
     try {
-
       const res = await axios.post(
         "https://pointage-personnel.onrender.com/api/pointages/scan",
-        hasArrived ? {} : { matricule } // ✅ magie ici
+        { matricule }
       )
 
       setMessage(res.data.message)
 
-      if (res.data.type === "arrival") {
-        setHasArrived(true) // cache input après
-      }
-
     } catch (err) {
-      console.log(err)
       setMessage("❌ Erreur serveur")
     }
   }
@@ -37,28 +60,28 @@ function ScanPage() {
           📲 Pointage employé
         </h2>
 
-        {/* 🔥 INPUT UNIQUEMENT AVANT ARRIVÉE */}
-        {!hasArrived && (
-          <input
-            type="text"
-            placeholder="Matricule employé"
-            value={matricule}
-            onChange={(e) => setMatricule(e.target.value)}
-            className="w-full p-3 border rounded mb-4"
-          />
-        )}
-
-        <button
-          onClick={handleScan}
-          className="w-full bg-green-500 text-white p-3 rounded font-semibold"
-        >
-          Pointer
-        </button>
-
-        {message && (
-          <p className="text-center mt-4 text-sm text-green-600">
+        {/* 🔥 SI DÉPART → PAS DE CHAMP */}
+        {isDeparture ? (
+          <p className="text-center text-green-600 font-semibold">
             {message}
           </p>
+        ) : (
+          <>
+            <input
+              type="text"
+              placeholder="Matricule employé"
+              value={matricule}
+              onChange={(e) => setMatricule(e.target.value)}
+              className="w-full p-3 border rounded mb-4"
+            />
+
+            <button
+              onClick={handleArrival}
+              className="w-full bg-green-500 text-white p-3 rounded font-semibold"
+            >
+              Pointer (Arrivée)
+            </button>
+          </>
         )}
 
       </div>
@@ -66,4 +89,4 @@ function ScanPage() {
   )
 }
 
-export default ScanPage;
+export default ScanPage

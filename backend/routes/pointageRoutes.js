@@ -41,7 +41,7 @@ router.post("/scan", async (req, res) => {
       return res.json({
         type: "departure",
         message: "👋 Départ enregistré",
-        data: existing
+        departureTime: existing.departure
       })
     }
 
