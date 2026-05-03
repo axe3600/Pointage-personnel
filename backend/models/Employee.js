@@ -8,7 +8,14 @@ const employeeSchema = new mongoose.Schema({
   position: String,
   department: String,
   hireDate: String,
-  address: String
+  address: String,
+
+  // ✅ AJOUT IMPORTANT
+  matricule: {
+    type: String,
+    unique: true
+  }
+
 }, { timestamps: true })
 
 export default mongoose.model("Employee", employeeSchema);

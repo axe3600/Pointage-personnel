@@ -202,6 +202,10 @@ function EmployeePage() {
                   </p>
                 </div>
 
+               {/* ✅ AJOUT */}
+                  <p className="text-xs text-indigo-500">
+                      Matricule : {emp.matricule}
+                  </p>
                 <button
                   onClick={() => handleDelete(emp._id)}
                   className="bg-red-100 text-red-600 px-3 py-1 rounded-lg"

@@ -3,37 +3,43 @@ import Employee from "../models/Employee.js"
 
 const router = express.Router()
 
+// 🔥 Fonction générer matricule unique
+const generateMatricule = () => {
+  const random = Math.floor(1000 + Math.random() * 9000)
+  return "EMP" + random
+}
+
 // 🔥 GET
 router.get("/", async (req, res) => {
   try {
     const data = await Employee.find()
     res.json(data)
   } catch (err) {
-    console.log(err)
     res.status(500).json({ message: "Erreur récupération" })
   }
 })
 
-// 🔥 POST (CORRIGÉ + SÉCURISÉ)
+// 🔥 POST
 router.post("/", async (req, res) => {
   try {
 
-    console.log("BODY RECU 👉", req.body) // 🔥 DEBUG IMPORTANT
-
-    // ✅ Validation minimale
     if (!req.body.firstName || !req.body.lastName) {
       return res.status(400).json({ message: "Champs obligatoires manquants" })
     }
 
+    let matricule
+    let exists = true
+
+    // 🔥 garantir unicité
+    while (exists) {
+      matricule = generateMatricule()
+      const check = await Employee.findOne({ matricule })
+      if (!check) exists = false
+    }
+
     const newEmployee = new Employee({
-      firstName: req.body.firstName,
-      lastName: req.body.lastName,
-      email: req.body.email || "",
-      phone: req.body.phone || "",
-      position: req.body.position || "",
-      department: req.body.department || "",
-      hireDate: req.body.hireDate || "",
-      address: req.body.address || ""
+      ...req.body,
+      matricule // ✅ AJOUT ICI
     })
 
     await newEmployee.save()
@@ -41,7 +47,7 @@ router.post("/", async (req, res) => {
     res.status(201).json(newEmployee)
 
   } catch (err) {
-    console.log("ERREUR BACKEND ❌", err)
+    console.log(err)
     res.status(500).json({ message: "Erreur serveur" })
   }
 })
@@ -52,9 +58,8 @@ router.delete("/:id", async (req, res) => {
     await Employee.findByIdAndDelete(req.params.id)
     res.json({ message: "Supprimé" })
   } catch (err) {
-    console.log(err)
     res.status(500).json({ message: "Erreur suppression" })
   }
 })
 
-export default router
+export default router;
