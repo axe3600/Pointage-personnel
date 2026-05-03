@@ -7,28 +7,29 @@ function ScanPage() {
   const [message, setMessage] = useState("")
   const [isDeparture, setIsDeparture] = useState(false)
 
-  // 🔥 AUTO CHECK AU CHARGEMENT
+  // 🔥 CHECK AUTO (départ)
   useEffect(() => {
-
     const checkDeparture = async () => {
       try {
         const res = await axios.post(
           "https://pointage-personnel.onrender.com/api/pointages/scan",
-          {} // ❗ pas de matricule
+          {}
         )
 
         if (res.data.type === "departure") {
           setIsDeparture(true)
           setMessage(`👋 Départ enregistré à ${res.data.departureTime}`)
+
+          // 🔥 fermeture auto après 2s
+          setTimeout(() => {
+            window.close()
+          }, 2000)
         }
 
-      } catch (err) {
-        console.log("Pas encore arrivé aujourd’hui")
-      }
+      } catch (err) {}
     }
 
     checkDeparture()
-
   }, [])
 
   // 🔥 ARRIVÉE
@@ -44,7 +45,13 @@ function ScanPage() {
         { matricule }
       )
 
-      setMessage(res.data.message)
+      // ✅ afficher heure
+      setMessage(`✅ Arrivé à ${res.data.arrivalTime}`)
+
+      // 🔥 fermeture auto après 2s
+      setTimeout(() => {
+        window.close()
+      }, 2000)
 
     } catch (err) {
       setMessage("❌ Erreur serveur")
@@ -57,10 +64,9 @@ function ScanPage() {
       <div className="bg-white p-6 rounded-2xl shadow w-[320px]">
 
         <h2 className="text-lg font-semibold mb-4 text-center">
-          📲 Pointage employé
+          📲 Pointage personnel
         </h2>
 
-        {/* 🔥 SI DÉPART → PAS DE CHAMP */}
         {isDeparture ? (
           <p className="text-center text-green-600 font-semibold">
             {message}
@@ -79,9 +85,15 @@ function ScanPage() {
               onClick={handleArrival}
               className="w-full bg-green-500 text-white p-3 rounded font-semibold"
             >
-              Pointer (Arrivée)
+              Pointer
             </button>
           </>
+        )}
+
+        {message && !isDeparture && (
+          <p className="text-center mt-4 text-green-600">
+            {message}
+          </p>
         )}
 
       </div>
@@ -89,4 +101,4 @@ function ScanPage() {
   )
 }
 
-export default ScanPage
+export default ScanPage;

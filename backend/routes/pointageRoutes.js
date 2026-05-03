@@ -71,7 +71,7 @@ router.post("/scan", async (req, res) => {
     res.json({
       type: "arrival",
       message: "✅ Arrivée enregistrée",
-      data: newPointage
+      arrivalTime: now.toLocaleTimeString()
     })
 
   } catch (err) {
