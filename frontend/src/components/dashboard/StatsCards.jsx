@@ -13,7 +13,7 @@ function StatsCards({ leaves, pointages }) {
 
   const fetchEmployees = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/employees")
+      const res = await axios.get("https://pointage-personnel.onrender.com/api/employees")
       setTotalEmployees(res.data.length)
     } catch (err) {
       console.log("Erreur chargement employés :", err)
