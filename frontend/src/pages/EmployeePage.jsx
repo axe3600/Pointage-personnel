@@ -204,7 +204,7 @@ function EmployeePage() {
 
                {/* ✅ AJOUT */}
                   <p className="text-xs text-indigo-500">
-                      Matricule : {emp.matricule}
+                  🆔Matricule : {emp.matricule || "Non généré"}
                   </p>
                 <button
                   onClick={() => handleDelete(emp._id)}

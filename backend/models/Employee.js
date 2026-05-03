@@ -1,5 +1,10 @@
 import mongoose from "mongoose"
 
+// 🔥 Générateur matricule
+const generateMatricule = () => {
+  return "EMP-" + Math.random().toString(36).substring(2, 8).toUpperCase()
+}
+
 const employeeSchema = new mongoose.Schema({
   firstName: String,
   lastName: String,
@@ -10,12 +15,13 @@ const employeeSchema = new mongoose.Schema({
   hireDate: String,
   address: String,
 
-  // ✅ AJOUT IMPORTANT
+  // ✅ MATRICULE AUTO
   matricule: {
     type: String,
-    unique: true
+    unique: true,
+    default: generateMatricule
   }
 
 }, { timestamps: true })
 
-export default mongoose.model("Employee", employeeSchema);
+export default mongoose.model("Employee", employeeSchema)

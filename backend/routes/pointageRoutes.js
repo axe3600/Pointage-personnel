@@ -1,5 +1,6 @@
 import express from "express"
 import Pointage from "../models/Pointage.js"
+import Employee from "../models/Employee.js"
 
 const router = express.Router()
 
@@ -16,17 +17,21 @@ router.get("/", async (req, res) => {
 
 // 🔥 SCAN INTELLIGENT (ARRIVÉE / DÉPART AUTO)
 router.post("/scan", async (req, res) => {
-
   try {
-
-    // ✅ récupération matricule
     const { matricule } = req.body
 
     if (!matricule) {
       return res.status(400).json({ message: "Matricule requis" })
     }
 
-    // ✅ récupérer vraie IP (IMPORTANT pour Render / proxy)
+    // 🔍 Trouver employé
+    const employee = await Employee.findOne({ matricule })
+
+    if (!employee) {
+      return res.status(404).json({ message: "Employé introuvable ❌" })
+    }
+
+    // 🔐 IP utilisateur
     const ip =
       req.headers["x-forwarded-for"]?.split(",")[0] ||
       req.socket.remoteAddress
@@ -34,7 +39,7 @@ router.post("/scan", async (req, res) => {
     const now = new Date()
     const today = now.toLocaleDateString()
 
-    // 🔎 chercher si déjà pointé aujourd'hui avec cette IP
+    // 🔍 Chercher pointage existant
     const existing = await Pointage.findOne({
       matricule,
       date: today,
@@ -42,17 +47,18 @@ router.post("/scan", async (req, res) => {
       departure: "-"
     }).sort({ createdAt: -1 })
 
-
     // =========================
-    // 🔥 CAS 1 → ARRIVÉE
+    // ✅ ARRIVÉE
     // =========================
     if (!existing) {
-
       const newPointage = new Pointage({
         matricule,
         ipAddress: ip,
-        firstName: "",
-        lastName: "",
+
+        // 🔥 LIAISON EMPLOYÉ
+        firstName: employee.firstName,
+        lastName: employee.lastName,
+
         date: today,
         arrival: now.toLocaleTimeString(),
         departure: "-",
@@ -66,14 +72,13 @@ router.post("/scan", async (req, res) => {
 
       return res.json({
         type: "arrival",
-        message: "✅ Arrivée enregistrée",
+        message: `✅ Arrivée enregistrée (${employee.firstName})`,
         data: newPointage
       })
     }
 
-
     // =========================
-    // 🔥 CAS 2 → DÉPART AUTO
+    // 👋 DÉPART
     // =========================
     existing.departure = now.toLocaleTimeString()
 
@@ -84,13 +89,13 @@ router.post("/scan", async (req, res) => {
 
     res.json({
       type: "departure",
-      message: "👋 Départ enregistré",
+      message: `👋 Départ enregistré (${employee.firstName})`,
       data: existing
     })
 
   } catch (err) {
-    console.error("Erreur scan :", err)
-    res.status(500).json({ message: "Erreur serveur scan" })
+    console.log("ERREUR SCAN ❌", err)
+    res.status(500).json({ message: "Erreur serveur" })
   }
 })
 
