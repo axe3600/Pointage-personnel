@@ -1,9 +1,9 @@
 import express from "express"
 import Pointage from "../models/Pointage.js"
+import Employee from "../models/Employee.js"
 
 const router = express.Router()
 
-// 🔥 SCAN INTELLIGENT
 router.post("/scan", async (req, res) => {
 
   const { matricule } = req.body
@@ -17,9 +17,7 @@ router.post("/scan", async (req, res) => {
 
   try {
 
-    // =========================
-    // 🔥 1. CHERCHER SI DÉJÀ ARRIVÉ (PAR IP)
-    // =========================
+    // 🔥 chercher pointage en cours
     const existing = await Pointage.findOne({
       ipAddress: ip,
       date: today,
@@ -27,7 +25,7 @@ router.post("/scan", async (req, res) => {
     }).sort({ createdAt: -1 })
 
     // =========================
-    // 🔥 CAS DÉPART (AUTO)
+    // 🔥 DÉPART
     // =========================
     if (existing) {
 
@@ -40,28 +38,39 @@ router.post("/scan", async (req, res) => {
 
       return res.json({
         type: "departure",
-        message: "👋 Départ enregistré",
-        departureTime: existing.departure
+        data: existing
       })
     }
 
     // =========================
-    // 🔥 CAS ARRIVÉE
+    // 🔥 ARRIVÉE
     // =========================
     if (!matricule) {
-      return res.status(400).json({
-        message: "Matricule requis pour arrivée"
-      })
+      return res.status(400).json({ message: "Matricule requis" })
     }
+
+    // 🔥 récupérer employé
+    const employee = await Employee.findOne({ matricule })
+
+    if (!employee) {
+      return res.status(404).json({ message: "Employé introuvable" })
+    }
+
+    // 🔥 logique retard
+    const isLate =
+      now.getHours() > 8 ||
+      (now.getHours() === 8 && now.getMinutes() > 0)
 
     const newPointage = new Pointage({
       matricule,
+      firstName: employee.firstName,
+      lastName: employee.lastName,
       ipAddress: ip,
       date: today,
       arrival: now.toLocaleTimeString(),
       departure: "-",
       hours: "-",
-      status: "Présent",
+      status: isLate ? "En retard" : "Présent",
       category: "pointage",
       reason: "QR Scan"
     })
@@ -70,14 +79,24 @@ router.post("/scan", async (req, res) => {
 
     res.json({
       type: "arrival",
-      message: "✅ Arrivée enregistrée",
-      arrivalTime: now.toLocaleTimeString()
+      data: newPointage
     })
 
   } catch (err) {
-    console.log("Erreur scan :", err)
+    console.log(err)
     res.status(500).json({ message: "Erreur serveur" })
   }
 })
 
-export default router
+
+// 🔥 NOUVELLE ROUTE POUR FRONT
+router.get("/", async (req, res) => {
+  try {
+    const data = await Pointage.find().sort({ createdAt: -1 })
+    res.json(data)
+  } catch (err) {
+    res.status(500).json({ message: "Erreur" })
+  }
+})
+
+export default router;

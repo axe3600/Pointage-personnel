@@ -58,6 +58,9 @@ function ScanPage() {
     }
   }
 
+// 🔥 envoyer event au dashboard
+window.localStorage.setItem("refresh", Date.now())
+
   return (
     <div className="h-screen flex items-center justify-center bg-blue-50">
 
