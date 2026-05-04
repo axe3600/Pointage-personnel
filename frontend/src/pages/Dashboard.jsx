@@ -31,15 +31,22 @@ function Dashboard() {
   }
 
   useEffect(() => {
+    const fetchPointages = async () => {
+      try {
+        const res = await axios.get("https://pointage-personnel.onrender.com/api/pointages")
+        setPointages(res.data)
+      } catch (err) {
+        console.log("Erreur chargement pointages")
+      }
+    }
+  
     fetchPointages()
-
-    const interval = setInterval(() => {
-      fetchPointages()
-    }, 2000)
-
+  
+    const interval = setInterval(fetchPointages, 2000)
+  
     return () => clearInterval(interval)
   }, [])
-
+  
   if (!isAuth) return <LoginModal onLogin={() => setIsAuth(true)} />
 
   return (

@@ -18,8 +18,7 @@ function ScanPage() {
 
         if (res.data.type === "departure") {
           setIsDeparture(true)
-          setMessage(`👋 Départ enregistré à ${res.data.data.departure}`)
-
+          setMessage(`👋 Départ enregistré à ${res.data?.departureTime || "--:--"}`)
           // 🔥 fermeture auto après 2s
           setTimeout(() => {
             window.close()
@@ -46,7 +45,7 @@ function ScanPage() {
       )
 
       // ✅ afficher heure
-      ssetMessage(`✅ Arrivé à ${res.data.data.arrival}`)
+      setMessage(`✅ Arrivé à ${res.data?.arrivalTime || "--:--"}`)
 
       // 🔥 fermeture auto après 2s
       setTimeout(() => {

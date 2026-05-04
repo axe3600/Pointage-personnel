@@ -6,18 +6,18 @@ const router = express.Router()
 
 router.post("/scan", async (req, res) => {
 
-  const { matricule } = req.body
-
-  const ip =
-    req.headers["x-forwarded-for"]?.split(",")[0] ||
-    req.socket.remoteAddress
-
-  const now = new Date()
-  const today = now.toLocaleDateString()
-
   try {
 
-    // 🔥 chercher pointage en cours
+    const { matricule } = req.body
+
+    const ip =
+      req.headers["x-forwarded-for"]?.split(",")[0] ||
+      req.socket.remoteAddress
+
+    const now = new Date()
+    const today = now.toLocaleDateString("en-GB")
+
+    // 🔥 1. CHECK SI DÉJÀ POINTÉ (ARRIVÉ)
     const existing = await Pointage.findOne({
       ipAddress: ip,
       date: today,
@@ -25,46 +25,52 @@ router.post("/scan", async (req, res) => {
     }).sort({ createdAt: -1 })
 
     // =========================
-    // 🔥 DÉPART
+    // ✅ CAS DÉPART
     // =========================
     if (existing) {
 
       existing.departure = now.toLocaleTimeString()
 
-      const diff = (new Date() - existing.createdAt) / (1000 * 60 * 60)
+      const diff = (now - new Date(existing.createdAt)) / (1000 * 60 * 60)
       existing.hours = diff.toFixed(2) + "h"
 
       await existing.save()
 
       return res.json({
         type: "departure",
-        data: existing
+        departureTime: existing.departure
       })
     }
 
     // =========================
-    // 🔥 ARRIVÉE
+    // ❌ SI PAS DE MATRICULE → ERREUR
     // =========================
     if (!matricule) {
-      return res.status(400).json({ message: "Matricule requis" })
+      return res.status(400).json({
+        message: "Matricule requis"
+      })
     }
 
-    // 🔥 récupérer employé
+    // 🔥 2. TROUVER EMPLOYÉ
     const employee = await Employee.findOne({ matricule })
 
     if (!employee) {
-      return res.status(404).json({ message: "Employé introuvable" })
+      return res.status(404).json({
+        message: "Employé introuvable"
+      })
     }
 
-    // 🔥 logique retard
-    const isLate =
-      now.getHours() > 8 ||
-      (now.getHours() === 8 && now.getMinutes() > 0)
+    // 🔥 3. CALCUL RETARD (8h)
+    const hour = now.getHours()
+    const minute = now.getMinutes()
 
+    const isLate = hour > 8 || (hour === 8 && minute > 0)
+
+    // 🔥 4. CRÉER POINTAGE
     const newPointage = new Pointage({
-      matricule,
       firstName: employee.firstName,
       lastName: employee.lastName,
+      matricule,
       ipAddress: ip,
       date: today,
       arrival: now.toLocaleTimeString(),
@@ -77,25 +83,19 @@ router.post("/scan", async (req, res) => {
 
     await newPointage.save()
 
+    // 🔥 5. RESPONSE PROPRE (IMPORTANT)
     res.json({
       type: "arrival",
-      data: newPointage
+      arrivalTime: newPointage.arrival,
+      employee: {
+        firstName: employee.firstName,
+        lastName: employee.lastName
+      }
     })
 
   } catch (err) {
-    console.log(err)
+    console.log("❌ ERREUR SCAN :", err)
     res.status(500).json({ message: "Erreur serveur" })
-  }
-})
-
-
-// 🔥 NOUVELLE ROUTE POUR FRONT
-router.get("/", async (req, res) => {
-  try {
-    const data = await Pointage.find().sort({ createdAt: -1 })
-    res.json(data)
-  } catch (err) {
-    res.status(500).json({ message: "Erreur" })
   }
 })
 
