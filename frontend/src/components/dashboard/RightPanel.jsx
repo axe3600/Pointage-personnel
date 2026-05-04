@@ -6,39 +6,46 @@ function RightPanel({ leaves, pointages, deleteLeave }) {
 
   const today = new Date()
 
-  // 🔹 Formatter date string (même format que ton app)
-  const formatDate = (date) =>
-    new Date(date).toLocaleDateString()
+  // 🔥 NORMALISATION DATE (FIX PRINCIPAL)
+  const normalizeDate = (dateStr) => {
+    const d = new Date(dateStr)
+    if (!isNaN(d)) return d.toDateString()
 
-  const todayString = formatDate(today)
+    // fallback format FR "dd/mm/yyyy"
+    const parts = dateStr.split("/")
+    if (parts.length === 3) {
+      const [day, month, year] = parts
+      return new Date(year, month - 1, day).toDateString()
+    }
 
-  // 🔥 FONCTION : vérifier si date <= 7 jours
-// 🔥 Convertir "dd/mm/yyyy" → vrai Date
-const parseFRDate = (dateStr) => {
-  const [day, month, year] = dateStr.split("/")
-  return new Date(year, month - 1, day)
-}
+    return ""
+  }
 
-// 🔥 Vérifie si dans les 7 derniers jours
-const isWithin7Days = (dateStr) => {
-  const itemDate = parseFRDate(dateStr)
+  // 🔥 COMPARAISON FIABLE
+  const isSameDay = (d1, d2) => {
+    return normalizeDate(d1) === new Date(d2).toDateString()
+  }
 
-  const today = new Date()
-  const diff = (today - itemDate) / (1000 * 60 * 60 * 24)
+  // 🔥 Vérifie si dans les 7 derniers jours
+  const isWithin7Days = (dateStr) => {
+    const parsed = normalizeDate(dateStr)
+    const itemDate = new Date(parsed)
 
-  return diff >= 0 && diff <= 7
-}
+    const diff = (today - itemDate) / (1000 * 60 * 60 * 24)
+
+    return diff >= 0 && diff <= 7
+  }
 
   // =========================
-  // 🔥 DATA DU JOUR
+  // 🔥 DATA DU JOUR (FIX ICI)
   // =========================
   const todayData = [
     ...leaves.map(l => ({ ...l, category: "leave" })),
     ...pointages
-  ].filter(item => item.date === todayString)
+  ].filter(item => isSameDay(item.date, today))
 
   // =========================
-  // 🔥 HISTORIQUE (7 JOURS)
+  // 🔥 HISTORIQUE (FIX ICI)
   // =========================
   const historyData = [
     ...leaves.map(l => ({ ...l, category: "leave" })),
@@ -46,39 +53,34 @@ const isWithin7Days = (dateStr) => {
   ].filter(item => isWithin7Days(item.date))
 
   // =========================
-  // 🔥 BADGE CENTRALISÉ  (IMPORTANT 🔥)
+  // 🔥 BADGE CENTRALISÉ
   // =========================
   const getBadge = (item) => {
 
-    // CONGÉ
     if (item.category === "leave") {
       return { label: "Congé", style: "bg-purple-100 text-purple-600" }
     }
 
-    // ABSENCE
     if (item.category === "absence") {
       return { label: "Absent", style: "bg-red-100 text-red-600" }
     }
 
-    // RETARD
     if (item.status === "En retard") {
       return { label: "En retard", style: "bg-orange-100 text-orange-500" }
     }
 
-    // PRÉSENT
     return { label: "Présent", style: "bg-green-100 text-green-600" }
   }
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm w-full">
 
-      {/* 🔥 HEADER */}
+      {/* HEADER */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-lg font-semibold text-gray-800">
           Activités
         </h2>
 
-        {/* 🔥 TABS */}
         <div className="flex bg-gray-100 rounded-xl p-1">
 
           <button
@@ -111,7 +113,6 @@ const isWithin7Days = (dateStr) => {
         </div>
       </div>
 
-      {/* 🔥 TABLE HEADER (pas pour congés) */}
       {tab !== "leave" && (
         <div className="grid grid-cols-7 text-sm text-gray-400 px-4 pb-2 border-b">
           <span>Date</span>
@@ -124,12 +125,9 @@ const isWithin7Days = (dateStr) => {
         </div>
       )}
 
-      {/* 🔥 CONTENT */}
       <div className="mt-3 space-y-2">
 
-        {/* ===================== */}
-        {/* 🔥 AUJOURD’HUI */}
-        {/* ===================== */}
+        {/* AUJOURD’HUI */}
         {tab === "today" && (
           todayData.length === 0 ? (
             <div className="text-center py-10 text-gray-400">
@@ -152,7 +150,6 @@ const isWithin7Days = (dateStr) => {
                   <span>{item.departure || "-"}</span>
                   <span>{item.hours || "-"}</span>
 
-                  {/* 🔥 BADGE */}
                   <span>
                     <span className={`px-3 py-1 text-xs rounded-full ${badge.style}`}>
                       {badge.label}
@@ -169,9 +166,7 @@ const isWithin7Days = (dateStr) => {
           )
         )}
 
-        {/* ===================== */}
-        {/* 🔥 HISTORIQUE (AUTO 7 JOURS) */}
-        {/* ===================== */}
+        {/* HISTORIQUE */}
         {tab === "history" && (
           historyData.length === 0 ? (
             <div className="text-center py-10 text-gray-400">
@@ -211,9 +206,7 @@ const isWithin7Days = (dateStr) => {
           )
         )}
 
-        {/* ===================== */}
-        {/* 🔥 CONGÉS */}
-        {/* ===================== */}
+        {/* CONGÉS */}
         {tab === "leave" && (
           leaves.length === 0 ? (
             <div className="text-center py-10 text-gray-400">
@@ -225,22 +218,18 @@ const isWithin7Days = (dateStr) => {
               {leaves.map((l, i) => (
                 <div key={i} className="bg-gray-50 border rounded-2xl p-5 hover:shadow">
 
-                  {/* HEADER */}
                   <div className="flex justify-between items-center mb-2">
 
                     <div className="flex items-center gap-3">
 
-                      {/* TYPE */}
                       <span className="bg-gray-200 px-3 py-1 text-xs rounded-full">
                         {l.type}
                       </span>
 
-                      {/* STATUS */}
                       <span className="border border-orange-400 text-orange-500 px-3 py-1 text-xs rounded-full">
                         En attente
                       </span>
 
-                      {/* ❌ delete gardé seulement pour congé */}
                       <button
                         onClick={() => deleteLeave(i)}
                         className="text-red-400 hover:text-red-600"
@@ -250,7 +239,6 @@ const isWithin7Days = (dateStr) => {
 
                     </div>
 
-                    {/* DURÉE */}
                     <span className="font-semibold">
                       {l.startDate && l.endDate
                         ? `${Math.ceil(
@@ -262,17 +250,14 @@ const isWithin7Days = (dateStr) => {
 
                   </div>
 
-                  {/* DATE */}
                   <p className="text-sm text-gray-400 mb-2">
                     Demandé le {l.date}
                   </p>
 
-                  {/* PÉRIODE */}
                   <p className="text-sm mb-3">
                     📅 Du {l.startDate} au {l.endDate}
                   </p>
 
-                  {/* MOTIF */}
                   <div className="bg-white border rounded-lg p-3 text-sm">
                     <span className="text-gray-400">Motif :</span>
                     <p>{l.reason || "Aucun motif"}</p>
