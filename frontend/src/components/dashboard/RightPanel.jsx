@@ -6,12 +6,11 @@ function RightPanel({ leaves, pointages, deleteLeave }) {
 
   const today = new Date()
 
-  // 🔥 NORMALISATION DATE (FIX PRINCIPAL)
+  // 🔥 NORMALISATION DATE
   const normalizeDate = (dateStr) => {
     const d = new Date(dateStr)
     if (!isNaN(d)) return d.toDateString()
 
-    // fallback format FR "dd/mm/yyyy"
     const parts = dateStr.split("/")
     if (parts.length === 3) {
       const [day, month, year] = parts
@@ -21,12 +20,10 @@ function RightPanel({ leaves, pointages, deleteLeave }) {
     return ""
   }
 
-  // 🔥 COMPARAISON FIABLE
   const isSameDay = (d1, d2) => {
     return normalizeDate(d1) === new Date(d2).toDateString()
   }
 
-  // 🔥 Vérifie si dans les 7 derniers jours
   const isWithin7Days = (dateStr) => {
     const parsed = normalizeDate(dateStr)
     const itemDate = new Date(parsed)
@@ -36,30 +33,17 @@ function RightPanel({ leaves, pointages, deleteLeave }) {
     return diff >= 0 && diff <= 7
   }
 
-  // =========================
-  // 🔥 DATA DU JOUR (FIX ICI)
-  // =========================
-  const todayData = [
-    ...leaves.map(l => ({ ...l, category: "leave" })),
-    ...pointages
-  ].filter(item => isSameDay(item.date, today))
+  // ✅ UNIQUEMENT POINTAGES (FIX MAJEUR)
+  const todayData = pointages.filter(item =>
+    isSameDay(item.date, today)
+  )
 
-  // =========================
-  // 🔥 HISTORIQUE (FIX ICI)
-  // =========================
-  const historyData = [
-    ...leaves.map(l => ({ ...l, category: "leave" })),
-    ...pointages
-  ].filter(item => isWithin7Days(item.date))
+  const historyData = pointages.filter(item =>
+    isWithin7Days(item.date)
+  )
 
-  // =========================
-  // 🔥 BADGE CENTRALISÉ
-  // =========================
+  // 🔥 BADGE
   const getBadge = (item) => {
-
-    if (item.category === "leave") {
-      return { label: "Congé", style: "bg-purple-100 text-purple-600" }
-    }
 
     if (item.category === "absence") {
       return { label: "Absent", style: "bg-red-100 text-red-600" }
@@ -83,36 +67,25 @@ function RightPanel({ leaves, pointages, deleteLeave }) {
 
         <div className="flex bg-gray-100 rounded-xl p-1">
 
-          <button
-            onClick={() => setTab("today")}
-            className={`px-4 py-2 text-sm rounded-lg ${
-              tab === "today" ? "bg-white shadow" : "text-gray-500"
-            }`}
-          >
+          <button onClick={() => setTab("today")}
+            className={`px-4 py-2 text-sm rounded-lg ${tab === "today" ? "bg-white shadow" : "text-gray-500"}`}>
             Aujourd'hui
           </button>
 
-          <button
-            onClick={() => setTab("history")}
-            className={`px-4 py-2 text-sm rounded-lg ${
-              tab === "history" ? "bg-white shadow" : "text-gray-500"
-            }`}
-          >
+          <button onClick={() => setTab("history")}
+            className={`px-4 py-2 text-sm rounded-lg ${tab === "history" ? "bg-white shadow" : "text-gray-500"}`}>
             Historique (7 jours)
           </button>
 
-          <button
-            onClick={() => setTab("leave")}
-            className={`px-4 py-2 text-sm rounded-lg ${
-              tab === "leave" ? "bg-white shadow" : "text-gray-500"
-            }`}
-          >
+          <button onClick={() => setTab("leave")}
+            className={`px-4 py-2 text-sm rounded-lg ${tab === "leave" ? "bg-white shadow" : "text-gray-500"}`}>
             Congés
           </button>
 
         </div>
       </div>
 
+      {/* TABLE */}
       {tab !== "leave" && (
         <div className="grid grid-cols-7 text-sm text-gray-400 px-4 pb-2 border-b">
           <span>Date</span>
@@ -127,7 +100,7 @@ function RightPanel({ leaves, pointages, deleteLeave }) {
 
       <div className="mt-3 space-y-2">
 
-        {/* AUJOURD’HUI */}
+        {/* 🔥 AUJOURD’HUI */}
         {tab === "today" && (
           todayData.length === 0 ? (
             <div className="text-center py-10 text-gray-400">
@@ -140,12 +113,8 @@ function RightPanel({ leaves, pointages, deleteLeave }) {
               return (
                 <div key={i} className="grid grid-cols-7 items-center px-4 py-3 rounded-xl hover:bg-gray-50">
 
-                  <span className="text-sm text-gray-600">{item.date}</span>
-
-                  <span className="font-medium text-gray-800">
-                    {item.firstName} {item.lastName}
-                  </span>
-
+                  <span>{item.date}</span>
+                  <span className="font-medium">{item.firstName} {item.lastName}</span>
                   <span>{item.arrival || "-"}</span>
                   <span>{item.departure || "-"}</span>
                   <span>{item.hours || "-"}</span>
@@ -166,7 +135,7 @@ function RightPanel({ leaves, pointages, deleteLeave }) {
           )
         )}
 
-        {/* HISTORIQUE */}
+        {/* 🔥 HISTORIQUE */}
         {tab === "history" && (
           historyData.length === 0 ? (
             <div className="text-center py-10 text-gray-400">
@@ -174,18 +143,13 @@ function RightPanel({ leaves, pointages, deleteLeave }) {
             </div>
           ) : (
             historyData.map((item, i) => {
-
               const badge = getBadge(item)
 
               return (
                 <div key={i} className="grid grid-cols-7 items-center px-4 py-3 rounded-xl border hover:bg-gray-50">
 
                   <span>{item.date}</span>
-
-                  <span className="font-medium">
-                    {item.firstName} {item.lastName}
-                  </span>
-
+                  <span className="font-medium">{item.firstName} {item.lastName}</span>
                   <span>{item.arrival || "-"}</span>
                   <span>{item.departure || "-"}</span>
                   <span>{item.hours || "-"}</span>
@@ -206,7 +170,7 @@ function RightPanel({ leaves, pointages, deleteLeave }) {
           )
         )}
 
-        {/* CONGÉS */}
+        {/* 🔥 CONGÉS (LOCAL POUR L’INSTANT) */}
         {tab === "leave" && (
           leaves.length === 0 ? (
             <div className="text-center py-10 text-gray-400">
@@ -216,37 +180,20 @@ function RightPanel({ leaves, pointages, deleteLeave }) {
             <div className="space-y-4">
 
               {leaves.map((l, i) => (
-                <div key={i} className="bg-gray-50 border rounded-2xl p-5 hover:shadow">
+                <div key={i} className="bg-gray-50 border rounded-2xl p-5">
 
                   <div className="flex justify-between items-center mb-2">
 
-                    <div className="flex items-center gap-3">
-
-                      <span className="bg-gray-200 px-3 py-1 text-xs rounded-full">
-                        {l.type}
-                      </span>
-
-                      <span className="border border-orange-400 text-orange-500 px-3 py-1 text-xs rounded-full">
-                        En attente
-                      </span>
-
-                      <button
-                        onClick={() => deleteLeave(i)}
-                        className="text-red-400 hover:text-red-600"
-                      >
-                        🗑️
-                      </button>
-
-                    </div>
-
-                    <span className="font-semibold">
-                      {l.startDate && l.endDate
-                        ? `${Math.ceil(
-                            (new Date(l.endDate) - new Date(l.startDate)) /
-                            (1000 * 60 * 60 * 24)
-                          ) + 1} jours`
-                        : ""}
+                    <span className="bg-gray-200 px-3 py-1 text-xs rounded-full">
+                      {l.type}
                     </span>
+
+                    <button
+                      onClick={() => deleteLeave(i)}
+                      className="text-red-400"
+                    >
+                      🗑️
+                    </button>
 
                   </div>
 
@@ -254,14 +201,9 @@ function RightPanel({ leaves, pointages, deleteLeave }) {
                     Demandé le {l.date}
                   </p>
 
-                  <p className="text-sm mb-3">
+                  <p className="text-sm">
                     📅 Du {l.startDate} au {l.endDate}
                   </p>
-
-                  <div className="bg-white border rounded-lg p-3 text-sm">
-                    <span className="text-gray-400">Motif :</span>
-                    <p>{l.reason || "Aucun motif"}</p>
-                  </div>
 
                 </div>
               ))}
@@ -275,4 +217,4 @@ function RightPanel({ leaves, pointages, deleteLeave }) {
   )
 }
 
-export default RightPanel;
+export default RightPanel
