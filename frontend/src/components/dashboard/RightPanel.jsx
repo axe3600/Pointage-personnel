@@ -180,20 +180,37 @@ function RightPanel({ leaves, pointages, deleteLeave }) {
             <div className="space-y-4">
 
               {leaves.map((l, i) => (
-                <div key={i} className="bg-gray-50 border rounded-2xl p-5">
+                <div key={i} className="bg-gray-50 border rounded-2xl p-5 hover:shadow">
 
                   <div className="flex justify-between items-center mb-2">
 
-                    <span className="bg-gray-200 px-3 py-1 text-xs rounded-full">
-                      {l.type}
-                    </span>
+                    <div className="flex items-center gap-3">
 
-                    <button
-                      onClick={() => deleteLeave(i)}
-                      className="text-red-400"
-                    >
-                      🗑️
-                    </button>
+                      <span className="bg-gray-200 px-3 py-1 text-xs rounded-full">
+                        {l.type}
+                      </span>
+
+                      <span className="border border-orange-400 text-orange-500 px-3 py-1 text-xs rounded-full">
+                        En attente
+                      </span>
+
+                      <button
+                        onClick={() => deleteLeave(i)}
+                        className="text-red-400 hover:text-red-600"
+                      >
+                        🗑️
+                      </button>
+
+                    </div>
+
+                    <span className="font-semibold">
+                      {l.startDate && l.endDate
+                        ? `${Math.ceil(
+                            (new Date(l.endDate) - new Date(l.startDate)) /
+                            (1000 * 60 * 60 * 24)
+                          ) + 1} jours`
+                        : ""}
+                    </span>
 
                   </div>
 
@@ -201,9 +218,14 @@ function RightPanel({ leaves, pointages, deleteLeave }) {
                     Demandé le {l.date}
                   </p>
 
-                  <p className="text-sm">
+                  <p className="text-sm mb-3">
                     📅 Du {l.startDate} au {l.endDate}
                   </p>
+
+                  <div className="bg-white border rounded-lg p-3 text-sm">
+                    <span className="text-gray-400">Motif :</span>
+                    <p>{l.reason || "Aucun motif"}</p>
+                  </div>
 
                 </div>
               ))}
