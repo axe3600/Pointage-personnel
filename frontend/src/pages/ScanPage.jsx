@@ -19,10 +19,14 @@ function ScanPage() {
         if (res.data.type === "departure") {
           setIsDeparture(true)
           setMessage(`👋 Départ enregistré à ${res.data?.departureTime || "--:--"}`)
+          
+          // 🔥 envoyer event au dashboard
+          localStorage.setItem("refresh", Date.now())
+          
           // 🔥 fermeture auto après 2s
           setTimeout(() => {
             window.close()
-          }, 2000)
+          }, 1000)
         }
 
       } catch (err) {}
@@ -47,6 +51,9 @@ function ScanPage() {
       // ✅ afficher heure
       setMessage(`✅ Arrivé à ${res.data?.arrivalTime || "--:--"}`)
 
+      // 🔥 envoyer event au dashboard
+      localStorage.setItem("refresh", Date.now())
+
       // 🔥 fermeture auto après 2s
       setTimeout(() => {
         window.close()
@@ -56,9 +63,6 @@ function ScanPage() {
       setMessage("❌ Erreur serveur")
     }
   }
-
-// 🔥 envoyer event au dashboard
-window.localStorage.setItem("refresh", Date.now())
 
   return (
     <div className="h-screen flex items-center justify-center bg-blue-50">

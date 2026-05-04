@@ -33,20 +33,36 @@ function Dashboard() {
   useEffect(() => {
     const fetchPointages = async () => {
       try {
-        const res = await axios.get("https://pointage-personnel.onrender.com/api/pointages")
+        const res = await axios.get(
+          "https://pointage-personnel.onrender.com/api/pointages"
+        )
         setPointages(res.data)
       } catch (err) {
         console.log("Erreur chargement pointages")
       }
     }
   
+    // 🔥 premier chargement
     fetchPointages()
   
+    // 🔥 refresh auto toutes les 2s
     const interval = setInterval(fetchPointages, 2000)
   
-    return () => clearInterval(interval)
-  }, [])
+    // 🔥 écoute du scan (IMPORTANT 🔥)
+    const handleStorage = (e) => {
+      if (e.key === "refresh") {
+        fetchPointages()
+      }
+    }
   
+    window.addEventListener("storage", handleStorage)
+  
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener("storage", handleStorage)
+    }
+  }, [])
+
   if (!isAuth) return <LoginModal onLogin={() => setIsAuth(true)} />
 
   return (
@@ -61,7 +77,11 @@ function Dashboard() {
         <div className="max-w-[1400px] mx-auto px-6 mt-6 grid grid-cols-12 gap-8">
 
           <div className="col-span-4">
-            <LeftPanel pointages={pointages} leaves={leaves} />
+          <LeftPanel
+  pointages={pointages}
+  leaves={leaves}
+  addPointage={(p) => setPointages(prev => [p, ...prev])}
+/>
           </div>
 
           <div className="col-span-8">
