@@ -4,6 +4,7 @@ import mongoose from "mongoose"
 import dotenv from "dotenv"
 import pointageRoutes from "./routes/pointageRoutes.js"
 import employeeRoutes from "./routes/employeeRoutes.js"
+import leaveRoutes from "./routes/leaveRoutes.js"
 
 dotenv.config()
 
@@ -20,6 +21,7 @@ app.use(express.json())
 // 🔥 ROUTES
 app.use("/api/pointages", pointageRoutes)
 app.use("/api/employees", employeeRoutes)
+app.use("/api/leaves", leaveRoutes)
 
 // 🔥 TEST
 app.get("/", (req, res) => {

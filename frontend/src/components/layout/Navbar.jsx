@@ -1,12 +1,10 @@
 import { useState } from "react"
-import { FaClipboardList } from "react-icons/fa"
+import { FaClipboardList, FaUserPlus } from "react-icons/fa"
 import LeaveModal from "../ui/LeaveModal"
-import { FaUserPlus } from "react-icons/fa"
 import { useNavigate } from "react-router-dom"
 
-function Navbar({ addLeave }) {
+function Navbar({ refreshData }) {
 
-  // 🔥 Gestion ouverture popup
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
 
@@ -32,17 +30,15 @@ function Navbar({ addLeave }) {
             </div>
           </div>
 
+          {/* 🔹 Ajouter employé */}
+          <button
+            onClick={() => navigate("/Enregistrement-Employe")}
+            className="bg-indigo-500 text-white p-4 rounded-lg hover:bg-indigo-600 transition"
+          >
+            <FaUserPlus />
+          </button>
 
-  {/* 🔥 BOUTON GAUCHE (AJOUT EMPLOYÉ) */}
-            <button
-              onClick={() => navigate("/Enregistrement-Employe")}
-              className="bg-indigo-500 text-white p-4 rounded-lg hover:bg-indigo-600 transition"
-              title="Ajouter un employé"
-            >
-               <FaUserPlus />
-            </button>
-  
-          {/* 🔹 Bouton ouverture modal */}
+          {/* 🔹 Demande congé */}
           <button
             onClick={() => setOpen(true)}
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition font-medium"
@@ -54,14 +50,14 @@ function Navbar({ addLeave }) {
         </div>
       </div>
 
-      {/* 🔥 Modal reçoit la fonction addLeave */}
+      {/* 🔥 Modal connecté à MongoDB */}
       <LeaveModal
         isOpen={open}
         onClose={() => setOpen(false)}
-        onSubmit={addLeave}
+        onSuccess={refreshData} // 🔥 reload API
       />
     </>
   )
 }
 
-export default Navbar;
+export default Navbar
