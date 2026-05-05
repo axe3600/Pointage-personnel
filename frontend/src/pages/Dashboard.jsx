@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react"
 import axios from "axios"
 import Navbar from "../components/layout/Navbar"
@@ -14,26 +13,35 @@ function Dashboard() {
     localStorage.getItem("isAuth") === "true"
   )
 
+  // 🔥 DATA BACKEND
   const [leaves, setLeaves] = useState([])
   const [pointages, setPointages] = useState([])
 
+  // =========================
   // 🔥 FETCH POINTAGES
+  // =========================
   const fetchPointages = async () => {
     try {
-      const res = await axios.get("https://pointage-personnel.onrender.com/api/pointages")
+      const res = await axios.get(
+        "https://pointage-personnel.onrender.com/api/pointages"
+      )
       setPointages(res.data)
     } catch (err) {
-      console.log(err)
+      console.log("Erreur pointages")
     }
   }
 
-  // 🔥 FETCH LEAVES
+  // =========================
+  // 🔥 FETCH CONGÉS
+  // =========================
   const fetchLeaves = async () => {
     try {
-      const res = await axios.get("https://pointage-personnel.onrender.com/api/leaves")
+      const res = await axios.get(
+        "https://pointage-personnel.onrender.com/api/leaves"
+      )
       setLeaves(res.data)
     } catch (err) {
-      console.log("Erreur leaves")
+      console.log("Erreur congés")
     }
   }
 
@@ -57,9 +65,7 @@ function Dashboard() {
   return (
     <div className="bg-gray-100 min-h-screen flex flex-col">
 
-      <Navbar refreshData={() => {
-        fetchLeaves()
-      }} />
+      <Navbar addLeave={fetchLeaves} /> {/* 🔥 refresh après ajout */}
 
       <div className="flex-grow">
 
@@ -68,13 +74,14 @@ function Dashboard() {
         <div className="max-w-[1400px] mx-auto px-6 mt-6 grid grid-cols-12 gap-8">
 
           <div className="col-span-4">
-            <LeftPanel refreshData={fetchPointages} />
+            <LeftPanel pointages={pointages} leaves={leaves} />
           </div>
 
           <div className="col-span-8">
             <RightPanel
               leaves={leaves}
               pointages={pointages}
+              deleteLeave={fetchLeaves} // 🔥 refresh après suppression
             />
           </div>
 
