@@ -22,25 +22,32 @@ function LeaveModal({ isOpen, onClose, onSubmit }) {
 const handleSubmit = async () => {
 
   if (!form.firstName || !form.lastName || !form.startDate) {
-    alert("Remplis tous les champs")
+    alert("Remplis tous les champs obligatoires")
     return
   }
 
   try {
-    await axios.post(
-      "https://pointage-personnel.onrender.com/api/leaves",
-      {
+    const res = await fetch("https://pointage-personnel.onrender.com/api/leaves", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
         ...form,
-        status: "En attente",
-        date: new Date().toLocaleDateString()
-      }
-    )
+        date: new Date().toISOString(), // 🔥 IMPORTANT
+        status: "En attente"
+      })
+    })
 
-    onSubmit() // 🔥 refresh Dashboard
+    if (!res.ok) throw new Error("Erreur API")
+
+    // ✅ refresh dashboard
+    onSubmit()
 
     onClose()
 
   } catch (err) {
+    console.log(err)
     alert("Erreur envoi congé ❌")
   }
 }
