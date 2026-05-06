@@ -10,25 +10,64 @@ import LoginModal from "../components/ui/LoginModal"
 
 function Dashboard() {
 
+  // =========================
+  // 🔐 AUTH
+  // =========================
   const [isAuth, setIsAuth] = useState(
     localStorage.getItem("isAuth") === "true"
   )
 
-  // 🔥 DATA BACKEND
+  // =========================
+  // 🔥DATA BACKEND
+  // =========================
   const [leaves, setLeaves] = useState([])
   const [pointages, setPointages] = useState([])
+
+  // =========================
+  // 🌍 API URL
+  // =========================
+  const API = "https://pointage-personnel.onrender.com/api"
 
   // =========================
   // 🔥 FETCH POINTAGES
   // =========================
   const fetchPointages = async () => {
+
     try {
-      const res = await axios.get(
-        "https://pointage-personnel.onrender.com/api/pointages"
-      )
-      setPointages(res.data)
+
+      const res = await axios.get(`${API}/pointages`)
+
+      // 🔥 sécurisation tableau
+      const data = Array.isArray(res.data)
+        ? res.data
+        : []
+
+      // 🔥 normalisation des données
+      const formattedData = data.map((item) => ({
+        ...item,
+
+        // 🔥 date ISO obligatoire
+        date: item.date || new Date().toISOString(),
+
+        // 🔥 valeurs fallback
+        firstName: item.firstName || "",
+        lastName: item.lastName || "",
+        arrival: item.arrival || "-",
+        departure: item.departure || "-",
+        hours: item.hours || "-",
+        status: item.status || "Présent",
+        reason: item.reason || "",
+        category: item.category || "pointage"
+      }))
+
+      setPointages(formattedData)
+
     } catch (err) {
+
       console.log("Erreur pointages ❌")
+      console.log(err)
+
+      setPointages([])
     }
   }
 
@@ -36,28 +75,80 @@ function Dashboard() {
   // 🔥 FETCH CONGÉS
   // =========================
   const fetchLeaves = async () => {
+
     try {
-      const res = await axios.get(
-        "https://pointage-personnel.onrender.com/api/leaves"
-      )
-      setLeaves(res.data)
+
+      const res = await axios.get(`${API}/leaves`)
+
+      // 🔥 sécurisation tableau
+      const data = Array.isArray(res.data)
+        ? res.data
+        : []
+
+      // 🔥 normalisation données congés
+      const formattedLeaves = data.map((leave) => ({
+        ...leave,
+
+        // 🔥 IMPORTANT pour Today + History
+        date:
+          leave.date ||
+          leave.createdAt ||
+          leave.startDate ||
+          new Date().toISOString(),
+
+        firstName: leave.firstName || "",
+        lastName: leave.lastName || "",
+        type: leave.type || "Congé",
+        reason: leave.reason || "",
+        status: leave.status || "En attente",
+        category: "leave"
+      }))
+
+      setLeaves(formattedLeaves)
+
     } catch (err) {
+
       console.log("Erreur congés ❌")
+      console.log(err)
+
+      setLeaves([])
     }
   }
 
   // =========================
-  // 🔥 AJOUT CONGÉ (FIX ERREUR)
+  // 🔥 AJOUT CONGÉ
   // =========================
   const addLeave = async (leaveData) => {
+
     try {
-      await axios.post(
-        "https://pointage-personnel.onrender.com/api/leaves",
-        leaveData
+
+      const payload = {
+        ...leaveData,
+
+        // 🔥 date ISO obligatoire
+        date: new Date().toISOString(),
+
+        status: "En attente",
+        category: "leave"
+      }
+
+      const res = await axios.post(
+        `${API}/leaves`,
+        payload
       )
 
-      fetchLeaves() // refresh après ajout
+      // 🔥 vérifier succès API
+      if (res.status !== 200 && res.status !== 201) {
+        throw new Error("Erreur API")
+      }
+
+      // 🔥 refresh auto
+      await fetchLeaves()
+
     } catch (err) {
+
+      console.log(err)
+
       alert("Erreur envoi congé ❌")
     }
   }
@@ -65,27 +156,50 @@ function Dashboard() {
   // =========================
   // 🔥 REFRESH GLOBAL
   // =========================
-  const refreshData = () => {
-    fetchPointages()
-    fetchLeaves()
+  const refreshData = async () => {
+
+    await Promise.all([
+      fetchPointages(),
+      fetchLeaves()
+    ])
   }
 
   // =========================
-  // 🔥 LOAD INITIAL + AUTO REFRESH
+  // 🔥 LOAD INITIAL
   // =========================
   useEffect(() => {
+
     refreshData()
 
-    const interval = setInterval(refreshData, 5000)
-    return () => clearInterval(interval)
   }, [])
 
   // =========================
-  // 🔥 LISTEN SCAN (IMPORTANT)
+  // 🔥 AUTO REFRESH
   // =========================
   useEffect(() => {
-    const handleStorage = () => {
+
+    const interval = setInterval(() => {
+
       refreshData()
+
+    }, 5000)
+
+    return () => clearInterval(interval)
+
+  }, [])
+
+  // =========================
+  // 🔥 LISTENER SCAN QR CODE
+  // =========================
+  useEffect(() => {
+
+    const handleStorage = (e) => {
+
+      // 🔥 uniquement refresh scan
+      if (e.key === "refresh") {
+
+        refreshData()
+      }
     }
 
     window.addEventListener("storage", handleStorage)
@@ -93,10 +207,21 @@ function Dashboard() {
     return () => {
       window.removeEventListener("storage", handleStorage)
     }
+
   }, [])
 
-  if (!isAuth) return <LoginModal onLogin={() => setIsAuth(true)} />
+  // =========================
+  // 🔐 LOGIN
+  // =========================
+  if (!isAuth) {
+    return (
+      <LoginModal onLogin={() => setIsAuth(true)} />
+    )
+  }
 
+  // =========================
+  // 🔥 UI
+  // =========================
   return (
     <div className="bg-gray-100 min-h-screen flex flex-col">
 

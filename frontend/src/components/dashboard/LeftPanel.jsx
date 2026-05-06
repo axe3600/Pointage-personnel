@@ -69,25 +69,30 @@ function LeftPanel({ pointages, leaves, refreshData }) {
       arrival.getHours() > 8 ||
       (arrival.getHours() === 8 && arrival.getMinutes() > 0)
 
-    try {
-      await axios.post(
-        "https://pointage-personnel.onrender.com/api/pointages/manual",
-        {
-          firstName: employee,
-          lastName: "",
-          date: new Date(), // 🔥 IMPORTANT
-          arrival: formatTime(arrival),
-          departure: formatTime(now),
-          hours: `${hours}h`,
-          status: isLate ? "En retard" : "Présent"
+      try {
+        const res = await axios.post(
+          "https://pointage-personnel.onrender.com/api/pointages/manual",
+          {
+            firstName: employee,
+            lastName: "",
+            arrival: arrival.toISOString(),
+            departure: now.toISOString(),
+            hours: `${hours}h`,
+            status: isLate ? "En retard" : "Présent",
+            date: new Date().toISOString() // 🔥 IMPORTANT
+          }
+        )
+      
+        if (res.status !== 200 && res.status !== 201) {
+          throw new Error("Erreur API")
         }
-      )
-
-      refreshData()
-
-    } catch (err) {
-      alert("Erreur pointage ❌")
-    }
+      
+        refreshData()
+      
+      } catch (err) {
+        console.error(err)
+        alert("Erreur pointage ❌")
+      }
 
     setArrival(null)
     setEmployee("")

@@ -27,16 +27,23 @@ function RightPanel({ leaves, pointages, deleteLeave }) {
   // =========================
   // 🔥 COMPARAISON DATE
   // =========================
-  const isSameDay = (d1, d2) => {
-    return normalizeDate(d1) === new Date(d2).toDateString()
+  const isSameDay = (dateStr) => {
+    const d = new Date(dateStr)
+    const today = new Date()
+  
+    return (
+      d.getDate() === today.getDate() &&
+      d.getMonth() === today.getMonth() &&
+      d.getFullYear() === today.getFullYear()
+    )
   }
-
+  
   const isWithin7Days = (dateStr) => {
-    const parsed = normalizeDate(dateStr)
-    const itemDate = new Date(parsed)
-
-    const diff = (today - itemDate) / (1000 * 60 * 60 * 24)
-
+    const d = new Date(dateStr)
+    const today = new Date()
+  
+    const diff = (today - d) / (1000 * 60 * 60 * 24)
+  
     return diff >= 0 && diff <= 7
   }
 
@@ -60,13 +67,9 @@ function RightPanel({ leaves, pointages, deleteLeave }) {
   // =========================
   // 🔥 FILTRES
   // =========================
-  const todayData = allData.filter(item =>
-    isSameDay(item.date, today)
-  )
-
-  const historyData = allData.filter(item =>
-    isWithin7Days(item.date)
-  )
+  const todayData = allData.filter(item => isSameDay(item.date))
+  
+  const historyData = allData.filter(item => isWithin7Days(item.date))
 
   // =========================
   // 🔥 BADGE CENTRALISÉ
