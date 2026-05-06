@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import axios from "axios"
+
 import Navbar from "../components/layout/Navbar"
 import StatsCards from "../components/dashboard/StatsCards"
 import LeftPanel from "../components/dashboard/LeftPanel"
@@ -27,7 +28,7 @@ function Dashboard() {
       )
       setPointages(res.data)
     } catch (err) {
-      console.log("Erreur pointages")
+      console.log("Erreur pointages ❌")
     }
   }
 
@@ -41,23 +42,57 @@ function Dashboard() {
       )
       setLeaves(res.data)
     } catch (err) {
-      console.log("Erreur congés")
+      console.log("Erreur congés ❌")
     }
   }
 
   // =========================
-  // 🔄 LOAD + REFRESH AUTO
+  // 🔥 AJOUT CONGÉ (FIX ERREUR)
   // =========================
-  useEffect(() => {
+  const addLeave = async (leaveData) => {
+    try {
+      await axios.post(
+        "https://pointage-personnel.onrender.com/api/leaves",
+        leaveData
+      )
+
+      fetchLeaves() // refresh après ajout
+    } catch (err) {
+      alert("Erreur envoi congé ❌")
+    }
+  }
+
+  // =========================
+  // 🔥 REFRESH GLOBAL
+  // =========================
+  const refreshData = () => {
     fetchPointages()
     fetchLeaves()
+  }
 
-    const interval = setInterval(() => {
-      fetchPointages()
-      fetchLeaves()
-    }, 2000)
+  // =========================
+  // 🔥 LOAD INITIAL + AUTO REFRESH
+  // =========================
+  useEffect(() => {
+    refreshData()
 
+    const interval = setInterval(refreshData, 5000)
     return () => clearInterval(interval)
+  }, [])
+
+  // =========================
+  // 🔥 LISTEN SCAN (IMPORTANT)
+  // =========================
+  useEffect(() => {
+    const handleStorage = () => {
+      refreshData()
+    }
+
+    window.addEventListener("storage", handleStorage)
+
+    return () => {
+      window.removeEventListener("storage", handleStorage)
+    }
   }, [])
 
   if (!isAuth) return <LoginModal onLogin={() => setIsAuth(true)} />
@@ -65,7 +100,8 @@ function Dashboard() {
   return (
     <div className="bg-gray-100 min-h-screen flex flex-col">
 
-      <Navbar addLeave={fetchLeaves} /> {/* 🔥 refresh après ajout */}
+      {/* 🔥 FIX: vraie fonction POST */}
+      <Navbar addLeave={addLeave} />
 
       <div className="flex-grow">
 
@@ -74,14 +110,19 @@ function Dashboard() {
         <div className="max-w-[1400px] mx-auto px-6 mt-6 grid grid-cols-12 gap-8">
 
           <div className="col-span-4">
-            <LeftPanel pointages={pointages} leaves={leaves} />
+            {/* 🔥 FIX: refreshData envoyé */}
+            <LeftPanel
+              pointages={pointages}
+              leaves={leaves}
+              refreshData={refreshData}
+            />
           </div>
 
           <div className="col-span-8">
             <RightPanel
               leaves={leaves}
               pointages={pointages}
-              deleteLeave={fetchLeaves} // 🔥 refresh après suppression
+              deleteLeave={refreshData}
             />
           </div>
 
@@ -93,4 +134,4 @@ function Dashboard() {
   )
 }
 
-export default Dashboard
+export default Dashboard;

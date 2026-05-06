@@ -15,7 +15,7 @@ function LeftPanel({ pointages, leaves, refreshData }) {
   }, [])
 
   // =========================
-  // 🔥 HORLOGE TEMPS RÉEL
+  // 🔥 HORLOGE
   // =========================
   const [currentTime, setCurrentTime] = useState(new Date())
 
@@ -27,32 +27,24 @@ function LeftPanel({ pointages, leaves, refreshData }) {
   }, [])
 
   // =========================
-  // 🔥 ETATS POINTAGE
+  // 🔥 ETATS
   // =========================
   const [arrival, setArrival] = useState(null)
   const [employee, setEmployee] = useState("")
 
-  // =========================
-  // 🔐 LOGOUT
-  // =========================
   const handleLogout = () => {
     localStorage.removeItem("isAuth")
     window.location.reload()
   }
 
   // =========================
-  // 🔹 FORMATAGE
+  // 🔹 FORMAT
   // =========================
   const formatTime = (date) =>
     date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
 
   const formatDate = (date) =>
-    date.toLocaleDateString("fr-FR", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    })
+    date.toLocaleDateString()
 
   // =========================
   // ✅ ARRIVÉE
@@ -63,7 +55,7 @@ function LeftPanel({ pointages, leaves, refreshData }) {
   }
 
   // =========================
-  // ✅ DÉPART → MONGO DB
+  // ✅ DÉPART → BACKEND
   // =========================
   const handleDeparture = async () => {
 
@@ -83,14 +75,15 @@ function LeftPanel({ pointages, leaves, refreshData }) {
         {
           firstName: employee,
           lastName: "",
-          arrival: arrival.toLocaleTimeString(),
-          departure: now.toLocaleTimeString(),
+          date: new Date(), // 🔥 IMPORTANT
+          arrival: formatTime(arrival),
+          departure: formatTime(now),
           hours: `${hours}h`,
           status: isLate ? "En retard" : "Présent"
         }
       )
 
-      refreshData() // 🔥 recharge depuis MongoDB
+      refreshData()
 
     } catch (err) {
       alert("Erreur pointage ❌")
@@ -101,7 +94,7 @@ function LeftPanel({ pointages, leaves, refreshData }) {
   }
 
   // =========================
-  // ❌ ABSENCE → MONGO DB
+  // ❌ ABSENCE → BACKEND
   // =========================
   const handleAbsence = async () => {
 
@@ -113,6 +106,7 @@ function LeftPanel({ pointages, leaves, refreshData }) {
         {
           firstName: employee,
           lastName: "",
+          date: new Date(), // 🔥 FIX
           category: "absence",
           status: "Absent",
           arrival: "-",
@@ -132,11 +126,13 @@ function LeftPanel({ pointages, leaves, refreshData }) {
   }
 
   // =========================
-  // 🔥 STATS (basé sur MongoDB)
+  // 🔥 STATS
   // =========================
-  const today = new Date().toLocaleDateString()
+  const today = new Date().toDateString()
 
-  const todayPointages = pointages.filter(p => p.date === today)
+  const todayPointages = pointages.filter(p =>
+    new Date(p.date).toDateString() === today
+  )
 
   const totalHours = todayPointages.reduce((acc, p) => {
     const h = parseFloat(p.hours) || 0
@@ -150,11 +146,11 @@ function LeftPanel({ pointages, leaves, refreshData }) {
   }
 
   const lateCount = todayPointages.filter(p => p.status === "En retard").length
-
   const workedDays = todayPointages.length
 
   const absents = pointages.filter(
-    p => p.category === "absence" && p.date === today
+    p => p.category === "absence" &&
+    new Date(p.date).toDateString() === today
   ).length
 
   const total = workedDays + absents
@@ -175,8 +171,7 @@ function LeftPanel({ pointages, leaves, refreshData }) {
 
       {/* 🔹 PROFIL */}
       <div className="bg-white p-5 rounded-xl shadow">
-
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between mb-4">
           <h3 className="font-semibold">Mon Profil</h3>
 
           <button
@@ -229,17 +224,11 @@ function LeftPanel({ pointages, leaves, refreshData }) {
         </div>
 
         <div className="flex gap-2">
-          <button
-            onClick={handleArrival}
-            className="flex-1 bg-green-500 text-white p-2 rounded"
-          >
+          <button onClick={handleArrival} className="flex-1 bg-green-500 text-white p-2 rounded">
             Pointer arrivée
           </button>
 
-          <button
-            onClick={handleDeparture}
-            className="flex-1 bg-black text-white p-2 rounded"
-          >
+          <button onClick={handleDeparture} className="flex-1 bg-black text-white p-2 rounded">
             Pointer départ
           </button>
         </div>
@@ -250,68 +239,6 @@ function LeftPanel({ pointages, leaves, refreshData }) {
         >
           Marquer absent
         </button>
-      </div>
-
-      {/* 🔹 STATS */}
-      <div className="bg-white p-5 rounded-2xl shadow">
-
-        <h3 className="font-semibold mb-4">Mes statistiques</h3>
-
-        <div className="grid grid-cols-2 gap-4">
-
-          <div className="bg-blue-50 p-4 rounded-xl">
-            <p className="text-sm text-gray-500">📈 Heures du jour</p>
-            <h3 className="text-xl font-bold text-blue-600">
-              {formatHours(totalHours)}
-            </h3>
-          </div>
-
-          <div className="bg-green-50 p-4 rounded-xl">
-            <p className="text-sm text-gray-500">🕒 Heures totales</p>
-            <h3 className="text-xl font-bold text-green-600">
-              {formatHours(totalHours)}
-            </h3>
-          </div>
-
-          <div className="bg-purple-50 p-4 rounded-xl">
-            <p className="text-sm text-gray-500">📅 Retards</p>
-            <h3 className="text-xl font-bold text-purple-600">
-              {lateCount}
-            </h3>
-          </div>
-
-          <div className="bg-orange-50 p-4 rounded-xl">
-            <p className="text-sm text-gray-500">🏅 Taux présence</p>
-            <h3 className="text-xl font-bold text-orange-500">
-              {presenceRate}%
-            </h3>
-          </div>
-
-        </div>
-
-        <div className="border-t my-4"></div>
-
-        <div className="space-y-2 text-sm text-gray-600">
-
-          <div className="flex justify-between">
-            <span>Jours travaillés</span>
-            <span className="font-semibold">{workedDays}</span>
-          </div>
-
-          <div className="flex justify-between">
-            <span>Absents</span>
-            <span className="text-red-500">{absents}</span>
-          </div>
-
-          <div className="flex justify-between">
-            <span>Ponctualité</span>
-            <span className="text-green-600 font-semibold">
-              {punctuality}%
-            </span>
-          </div>
-
-        </div>
-
       </div>
 
     </div>

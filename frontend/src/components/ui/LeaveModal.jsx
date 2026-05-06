@@ -1,7 +1,7 @@
 import { useState } from "react"
 import axios from "axios"
 
-function LeaveModal({ isOpen, onClose, onSuccess }) {
+function LeaveModal({ isOpen, onClose, onSubmit }) {
 
   if (!isOpen) return null
 
@@ -15,38 +15,30 @@ function LeaveModal({ isOpen, onClose, onSuccess }) {
   })
 
   const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value
-    })
+    setForm({ ...form, [e.target.name]: e.target.value })
   }
 
-  // 🔥 ENVOI BACKEND
+  // 🔥 FIX PRINCIPAL ICI
   const handleSubmit = async () => {
 
     if (!form.firstName || !form.lastName || !form.startDate) {
-      alert("Remplis tous les champs obligatoires")
+      alert("Remplis tous les champs")
       return
     }
 
     try {
       await axios.post(
         "https://pointage-personnel.onrender.com/api/leaves",
-        form
+        {
+          ...form,
+          status: "En attente",
+          date: new Date().toLocaleDateString()
+        }
       )
 
-      onSuccess() // 🔥 refresh dashboard
-      onClose()
+      onSubmit() // 🔥 refresh Dashboard
 
-      // reset
-      setForm({
-        firstName: "",
-        lastName: "",
-        type: "Congé payé",
-        startDate: "",
-        endDate: "",
-        reason: ""
-      })
+      onClose()
 
     } catch (err) {
       alert("Erreur envoi congé ❌")
@@ -60,45 +52,32 @@ function LeaveModal({ isOpen, onClose, onSuccess }) {
 
         <button onClick={onClose} className="absolute top-4 right-4">✕</button>
 
-        <h2 className="text-lg font-semibold mb-1">
-          Demande de congé
-        </h2>
-
-        <p className="text-sm text-gray-500 mb-4">
-          Remplissez le formulaire
-        </p>
+        <h2 className="text-lg font-semibold mb-4">Demande de congé</h2>
 
         <div className="space-y-4">
 
           <div className="grid grid-cols-2 gap-3">
-            <input name="firstName" placeholder="Prénom" value={form.firstName} onChange={handleChange} className="p-2 border rounded-lg bg-gray-50"/>
-            <input name="lastName" placeholder="Nom" value={form.lastName} onChange={handleChange} className="p-2 border rounded-lg bg-gray-50"/>
+            <input name="firstName" onChange={handleChange} placeholder="Prénom" className="p-2 border rounded-lg"/>
+            <input name="lastName" onChange={handleChange} placeholder="Nom" className="p-2 border rounded-lg"/>
           </div>
 
-          <select name="type" value={form.type} onChange={handleChange} className="w-full p-2 border rounded-lg bg-gray-50">
+          <select name="type" onChange={handleChange} className="p-2 border rounded-lg">
             <option>Congé payé</option>
             <option>Maladie</option>
-            <option>Exceptionnel</option>
           </select>
 
           <div className="grid grid-cols-2 gap-3">
-            <input type="date" name="startDate" value={form.startDate} onChange={handleChange} className="p-2 border rounded-lg"/>
-            <input type="date" name="endDate" value={form.endDate} onChange={handleChange} className="p-2 border rounded-lg"/>
+            <input type="date" name="startDate" onChange={handleChange} className="p-2 border"/>
+            <input type="date" name="endDate" onChange={handleChange} className="p-2 border"/>
           </div>
 
-          <textarea name="reason" value={form.reason} placeholder="Motif..." onChange={handleChange} className="w-full p-2 border rounded-lg"/>
+          <textarea name="reason" onChange={handleChange} className="p-2 border"/>
 
         </div>
 
-        <div className="flex justify-end gap-3 mt-6">
-          <button onClick={onClose} className="px-4 py-2 bg-gray-100 rounded-lg">
-            Annuler
-          </button>
-
-          <button onClick={handleSubmit} className="px-4 py-2 bg-blue-600 text-white rounded-lg">
-            Soumettre
-          </button>
-        </div>
+        <button onClick={handleSubmit} className="mt-4 bg-blue-600 text-white p-2 rounded">
+          Soumettre
+        </button>
 
       </div>
     </div>
