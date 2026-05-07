@@ -30,7 +30,8 @@ function LeftPanel({ pointages, leaves, refreshData }) {
   // 🔥 ETATS
   // =========================
   const [arrival, setArrival] = useState(null)
-  const [employee, setEmployee] = useState("")
+  const [matricule, setMatricule] = useState("")
+  const [employeeData, setEmployeeData] = useState(null)
 
   const handleLogout = () => {
     localStorage.removeItem("isAuth")
@@ -49,9 +50,37 @@ function LeftPanel({ pointages, leaves, refreshData }) {
   // =========================
   // ✅ ARRIVÉE
   // =========================
-  const handleArrival = () => {
-    if (!employee) return alert("Entre un nom")
-    setArrival(new Date())
+  const handleArrival = async () => {
+
+    if (!matricule) {
+      return alert("Entre un matricule")
+    }
+  
+    try {
+  
+      // 🔥 chercher employé
+      const res = await axios.get(
+        `https://pointage-personnel.onrender.com/api/employees`
+      )
+  
+      const employee = res.data.find(
+        emp => emp.matricule === matricule
+      )
+  
+      if (!employee) {
+        return alert("Employé introuvable")
+      }
+  
+      setEmployeeData(employee)
+  
+      setArrival(new Date())
+  
+    } catch (err) {
+  
+      console.log(err)
+  
+      alert("Erreur employé ❌")
+    }
   }
 
   // =========================
@@ -59,43 +88,74 @@ function LeftPanel({ pointages, leaves, refreshData }) {
   // =========================
   const handleDeparture = async () => {
 
-    if (!arrival) return alert("Pointer arrivée d'abord")
-
+    if (!arrival) {
+      return alert("Pointer arrivée d'abord")
+    }
+  
+    if (!employeeData) {
+      return alert("Employé introuvable")
+    }
+  
     const now = new Date()
-    const diff = (now - arrival) / (1000 * 60 * 60)
+  
+    const diff =
+      (now - arrival) / (1000 * 60 * 60)
+  
     const hours = diff.toFixed(2)
-
+  
     const isLate =
       arrival.getHours() > 8 ||
-      (arrival.getHours() === 8 && arrival.getMinutes() > 0)
-
-      try {
-        const res = await axios.post(
-          "https://pointage-personnel.onrender.com/api/pointages/manual",
-          {
-            firstName: employee,
-            lastName: "",
-            arrival: arrival.toISOString(),
-            departure: now.toISOString(),
-            hours: `${hours}h`,
-            status: isLate ? "En retard" : "Présent",
-            date: new Date().toISOString() // 🔥 IMPORTANT
-          }
-        )
-      
-        if (res.status !== 200 && res.status !== 201) {
-          throw new Error("Erreur API")
+      (arrival.getHours() === 8 &&
+        arrival.getMinutes() > 0)
+  
+    try {
+  
+      const res = await axios.post(
+        "https://pointage-personnel.onrender.com/api/pointages/manual",
+        {
+  
+          firstName: employeeData.firstName,
+  
+          lastName: employeeData.lastName,
+  
+          matricule: employeeData.matricule,
+  
+          date: new Date().toISOString(),
+  
+          arrival: arrival.toLocaleTimeString(),
+  
+          departure: now.toLocaleTimeString(),
+  
+          hours: `${hours}h`,
+  
+          status: isLate
+            ? "En retard"
+            : "Présent",
+  
+          category: "pointage",
+  
+          reason: "Pointage manuel"
         }
-      
-        refreshData()
-      
-      } catch (err) {
-        console.error(err)
-        alert("Erreur pointage ❌")
+      )
+  
+      if (res.status !== 200 && res.status !== 201) {
+        throw new Error("Erreur API")
       }
-
+  
+      refreshData()
+  
+    } catch (err) {
+  
+      console.log(err)
+  
+      alert("Erreur pointage ❌")
+    }
+  
     setArrival(null)
-    setEmployee("")
+  
+    setMatricule("")
+  
+    setEmployeeData(null)
   }
 
   // =========================
@@ -103,15 +163,35 @@ function LeftPanel({ pointages, leaves, refreshData }) {
   // =========================
   const handleAbsence = async () => {
 
-    if (!employee) return alert("Entre un nom")
-
+    if (!matricule) {
+      return alert("Entre un matricule")
+    }
+  
     try {
+  
+      const employees = await axios.get(
+        "https://pointage-personnel.onrender.com/api/employees"
+      )
+  
+      const employee = employees.data.find(
+        emp => emp.matricule === matricule
+      )
+  
+      if (!employee) {
+        return alert("Employé introuvable")
+      }
+  
       await axios.post(
         "https://pointage-personnel.onrender.com/api/pointages/manual",
         {
-          firstName: employee,
-          lastName: "",
-          date: new Date(), // 🔥 FIX
+  
+          firstName: employee.firstName,
+  
+          lastName: employee.lastName,
+  
+          matricule: employee.matricule,
+  
+          date: new Date().toISOString(),
           category: "absence",
           status: "Absent",
           arrival: "-",
@@ -120,14 +200,17 @@ function LeftPanel({ pointages, leaves, refreshData }) {
           reason: "Absent"
         }
       )
-
+  
       refreshData()
-
+  
     } catch (err) {
+  
+      console.log(err)
+  
       alert("Erreur absence ❌")
     }
-
-    setEmployee("")
+  
+    setMatricule("")
   }
 
   // =========================
@@ -221,9 +304,9 @@ function LeftPanel({ pointages, leaves, refreshData }) {
         {/* Nom */}
         <input
           type="text"
-          placeholder="Nom employé"
-          value={employee}
-          onChange={(e) => setEmployee(e.target.value)}
+          placeholder="Matricule employé"
+          value={matricule}
+          onChange={(e) => setMatricule(e.target.value)}
           className="w-full mb-3 p-2 border rounded-lg"
         />
 
