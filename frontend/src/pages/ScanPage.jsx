@@ -25,7 +25,7 @@ function ScanPage() {
           
           // 🔥 fermeture auto après 2s
           setTimeout(() => {
-            window.close()
+            window.location.href = "/"
           }, 1000)
         }
 
@@ -56,8 +56,8 @@ function ScanPage() {
 
       // 🔥 fermeture auto après 2s
       setTimeout(() => {
-        window.close()
-      }, 2000)
+        window.location.href = "/"
+      }, 1000)
 
     } catch (err) {
       setMessage("❌ Erreur serveur")
