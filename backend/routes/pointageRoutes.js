@@ -42,6 +42,29 @@ router.post("/scan", async (req, res) => {
       })
     }
 
+// =======================================
+// ✅ POINTAGE MANUEL
+// =======================================
+router.post("/manual", async (req, res) => {
+
+  try {
+
+    const pointage = new Pointage(req.body)
+
+    await pointage.save()
+
+    res.status(201).json(pointage)
+
+  } catch (err) {
+
+    console.log(err)
+
+    res.status(500).json({
+      message: "Erreur pointage manuel"
+    })
+  }
+})
+
     // =========================
     // ❌ SI PAS DE MATRICULE → ERREUR
     // =========================

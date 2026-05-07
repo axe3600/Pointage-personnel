@@ -3,12 +3,12 @@ import { FaClipboardList, FaUserPlus } from "react-icons/fa"
 import LeaveModal from "../ui/LeaveModal"
 import { useNavigate } from "react-router-dom"
 
-function Navbar({ refreshData }) {
+function Navbar({ addLeave }) {
 
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
 
-  return (
+    return (
     <>
       <div className="w-full bg-white py-5 border-b border-gray-100">
         
@@ -54,7 +54,7 @@ function Navbar({ refreshData }) {
       <LeaveModal
         isOpen={open}
         onClose={() => setOpen(false)}
-        onSuccess={refreshData} // 🔥 reload API
+        onSubmit={addLeave} // 🔥 reload API
       />
     </>
   )

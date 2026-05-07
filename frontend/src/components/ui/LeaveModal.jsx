@@ -1,5 +1,4 @@
 import { useState } from "react"
-import axios from "axios"
 
 function LeaveModal({ isOpen, onClose, onSubmit }) {
 
@@ -27,26 +26,17 @@ const handleSubmit = async () => {
   }
 
   try {
-    const res = await fetch("https://pointage-personnel.onrender.com/api/leaves", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        ...form,
-        date: new Date().toISOString(), // 🔥 IMPORTANT
-        status: "En attente"
-      })
+
+    await onSubmit({
+      ...form,
+      date: new Date().toISOString(),
+      status: "En attente"
     })
-
-    if (!res.ok) throw new Error("Erreur API")
-
-    // ✅ refresh dashboard
-    onSubmit()
 
     onClose()
 
   } catch (err) {
+
     console.log(err)
     alert("Erreur envoi congé ❌")
   }

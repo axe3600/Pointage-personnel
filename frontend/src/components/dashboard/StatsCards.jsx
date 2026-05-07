@@ -34,7 +34,9 @@ function StatsCards({ leaves, pointages }) {
   // =========================
   // 🔥 DATA DU JOUR
   // =========================
-  const todayPointages = pointages.filter(p => p.date === today)
+  const todayPointages = pointages.filter(
+    p => new Date(p.date).toLocaleDateString() === today
+  )
 
   const presents = todayPointages.filter(p => p.status === "Présent").length
 
@@ -42,7 +44,9 @@ function StatsCards({ leaves, pointages }) {
 
   const absents = todayPointages.filter(p => p.category === "absence").length
 
-  const enConge = leaves.filter(l => l.date === today).length
+  const enConge = leaves.filter(
+    l => new Date(l.date).toLocaleDateString() === today
+  ).length
 
   // =========================
   // 🔥 CARD COMPONENT

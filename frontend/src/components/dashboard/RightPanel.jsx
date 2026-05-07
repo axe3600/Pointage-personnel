@@ -162,7 +162,11 @@ function RightPanel({ leaves, pointages, deleteLeave }) {
               return (
                 <div key={i} className="grid grid-cols-7 items-center px-4 py-3 rounded-xl hover:bg-gray-50">
 
-                  <span>{item.date}</span>
+                  <span>
+                    {item.date
+                       ? new Date(item.date).toISOString().split("T")[0]
+                       : "-"}
+                  </span>
 
                   <span className="font-medium">
                     {item.firstName} {item.lastName}
@@ -203,7 +207,11 @@ function RightPanel({ leaves, pointages, deleteLeave }) {
               return (
                 <div key={i} className="grid grid-cols-7 items-center px-4 py-3 rounded-xl border hover:bg-gray-50">
 
-                  <span>{item.date}</span>
+                  <span>
+                    {item.date
+                       ? new Date(item.date).toISOString().split("T")[0]
+                       : "-"}
+                  </span>
 
                   <span className="font-medium">
                     {item.firstName} {item.lastName}
@@ -276,7 +284,11 @@ function RightPanel({ leaves, pointages, deleteLeave }) {
                   </div>
 
                   <p className="text-sm text-gray-400 mb-2">
-                    Demandé le {l.date}
+                  Demandé le {
+                    l.date
+                   ? new Date(l.date).toISOString().split("T")[0]
+                    : "-"
+                  }
                   </p>
 
                   <p className="text-sm mb-3">
