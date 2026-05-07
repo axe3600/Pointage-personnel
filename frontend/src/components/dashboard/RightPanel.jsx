@@ -1,7 +1,9 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 
 function RightPanel({ leaves, pointages, deleteLeave }) {
 
+  const navigate = useNavigate()
   const [tab, setTab] = useState("today")
   const today = new Date()
 
@@ -95,42 +97,80 @@ function RightPanel({ leaves, pointages, deleteLeave }) {
     <div className="bg-white p-6 rounded-2xl shadow-sm w-full">
 
       {/* HEADER */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-lg font-semibold text-gray-800">
-          Activités
-        </h2>
 
-        <div className="flex bg-gray-100 rounded-xl p-1">
+<div className="flex justify-between items-start mb-6">
 
-          <button
-            onClick={() => setTab("today")}
-            className={`px-4 py-2 text-sm rounded-lg ${
-              tab === "today" ? "bg-white shadow" : "text-gray-500"
-            }`}
-          >
-            Aujourd'hui
-          </button>
+  {/* GAUCHE */}
+  <div>
 
-          <button
-            onClick={() => setTab("history")}
-            className={`px-4 py-2 text-sm rounded-lg ${
-              tab === "history" ? "bg-white shadow" : "text-gray-500"
-            }`}
-          >
-            Historique (7 jours)
-          </button>
+    <h2 className="text-lg font-semibold text-gray-800 mb-4">
+      Activités
+    </h2>
 
-          <button
-            onClick={() => setTab("leave")}
-            className={`px-4 py-2 text-sm rounded-lg ${
-              tab === "leave" ? "bg-white shadow" : "text-gray-500"
-            }`}
-          >
-            Congés
-          </button>
+    {/* 🔥 TABS */}
+    <div className="flex bg-gray-100 rounded-xl p-1 w-fit">
 
-        </div>
-      </div>
+      <button
+        onClick={() => setTab("today")}
+        className={`px-4 py-2 text-sm rounded-lg ${
+          tab === "today"
+            ? "bg-white shadow"
+            : "text-gray-500"
+        }`}
+      >
+        Aujourd'hui
+      </button>
+
+      <button
+        onClick={() => setTab("history")}
+        className={`px-4 py-2 text-sm rounded-lg ${
+          tab === "history"
+            ? "bg-white shadow"
+            : "text-gray-500"
+        }`}
+      >
+        Historique (7 jours)
+      </button>
+
+      <button
+        onClick={() => setTab("leave")}
+        className={`px-4 py-2 text-sm rounded-lg ${
+          tab === "leave"
+            ? "bg-white shadow"
+            : "text-gray-500"
+        }`}
+      >
+        Congés
+      </button>
+
+    </div>
+
+  </div>
+
+  {/* 🔥 BOUTON HISTORIQUE GLOBAL */}
+  <button
+    onClick={() => navigate("/historique-global")}
+    className="
+      bg-gradient-to-r
+      from-indigo-500
+      to-purple-600
+      text-white
+      px-5
+      py-3
+      rounded-2xl
+      text-sm
+      font-medium
+      shadow-lg
+      hover:scale-105
+      hover:shadow-xl
+      transition-all
+      duration-300
+    "
+  >
+    ⏱️ Historique Global
+  </button>
+
+</div>
 
       {/* TABLE HEADER */}
       {tab !== "leave" && (

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom"
 import Dashboard from "./pages/Dashboard"
 import ScanPage from "./pages/ScanPage"
 import EmployeePage from "./pages/EmployeePage"
+import HistoriqueGlobal from "./pages/HistoriqueGlobal"
 
 function App() {
   return (
@@ -17,6 +18,9 @@ function App() {
 
            {/* 🔥 enregistrement employé */}
         <Route path="/Enregistrement-Employe" element={<EmployeePage />} />
+
+        <Route path="/historique-global" element={<HistoriqueGlobal />}
+/>
       </Routes>
 
     </BrowserRouter>
