@@ -10,6 +10,17 @@ import LoginModal from "../components/ui/LoginModal"
 
 function Dashboard() {
 
+    // fonction DELETE
+  const deleteLeave = async (id) => {
+    try {
+      await axios.delete(`${API}/leaves/${id}`)
+      await fetchLeaves()
+    } catch (err) {
+      console.log(err)
+      alert("Erreur suppression congé ❌")
+    }
+  }
+
   // =========================
   // 🔐 AUTH
   // =========================
@@ -247,7 +258,7 @@ function Dashboard() {
             <RightPanel
               leaves={leaves}
               pointages={pointages}
-              deleteLeave={refreshData}
+              deleteLeave={deleteLeave}
             />
           </div>
 

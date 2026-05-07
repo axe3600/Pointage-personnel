@@ -264,7 +264,7 @@ function RightPanel({ leaves, pointages, deleteLeave }) {
                       </span>
 
                       <button
-                        onClick={() => deleteLeave(i)}
+                        onClick={() => deleteLeave(l._id)}
                         className="text-red-400 hover:text-red-600"
                       >
                         🗑️
