@@ -5,11 +5,12 @@ import dotenv from "dotenv"
 import pointageRoutes from "./routes/pointageRoutes.js"
 import employeeRoutes from "./routes/employeeRoutes.js"
 import leaveRoutes from "./routes/leaveRoutes.js"
+import salaryRoutes from "./routes/salaryRoutes.js"
 
 dotenv.config()
 
 const app = express()
-const salairesRoutes = require("./routes/salaires")
+
 
 // ✅ CORS (UNE SEULE FOIS)
 app.use(cors({
@@ -23,7 +24,7 @@ app.use(express.json())
 app.use("/api/pointages", pointageRoutes)
 app.use("/api/employees", employeeRoutes)
 app.use("/api/leaves", leaveRoutes)
-app.use("/api/salaires", salairesRoutes)
+app.use("/api/salaires", salaryRoutes)
 
 // 🔥 TEST
 app.get("/", (req, res) => {
