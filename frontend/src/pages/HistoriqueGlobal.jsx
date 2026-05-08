@@ -10,7 +10,10 @@ import {
   FaMugHot,
   FaCalendarAlt,
   FaDollarSign,
-  FaArrowLeft
+  FaArrowLeft,
+  FaFilePdf,
+  FaFileExcel,
+  FaCheckCircle
 } from "react-icons/fa"
 
 function HistoriqueGlobal() {
@@ -40,6 +43,12 @@ function HistoriqueGlobal() {
   const [selectedYear, setSelectedYear] = useState(
     currentDate.getFullYear()
   )
+
+  // =========================
+  // 🔥 DÉDUCTIONS
+  // =========================
+  const [absenceDeduction, setAbsenceDeduction] = useState(100)
+  const [retardDeduction, setRetardDeduction] = useState(10)
 
   // =========================
   // 🔥 URL API
@@ -72,6 +81,7 @@ function HistoriqueGlobal() {
 
       console.log("Erreur chargement historique ❌")
       console.log(err)
+
     }
   }
 
@@ -119,6 +129,35 @@ function HistoriqueGlobal() {
   ).length
 
   const conges = monthlyLeaves.length
+
+  // =========================
+  // 🔥 CALCULS SALAIRES
+  // =========================
+  const salaireBaseTotal = monthlyPointages.reduce((acc, p) => {
+
+    const hours = parseFloat(p.hours) || 0
+    return acc + (hours * 1500)
+
+  }, 0)
+
+  const deductionsTotal = monthlyPointages.reduce((acc, p) => {
+
+    let deduction = 0
+
+    if (p.category === "absence") {
+      deduction += absenceDeduction
+    }
+
+    if (p.status === "En retard") {
+      deduction += retardDeduction
+    }
+
+    return acc + deduction
+
+  }, 0)
+
+  const salaireNetTotal =
+    salaireBaseTotal - deductionsTotal
 
   // =========================
   // 🔥 MOIS
@@ -253,9 +292,7 @@ function HistoriqueGlobal() {
 
           </div>
 
-          {/* ========================= */}
           {/* 🔥 PÉRIODE */}
-          {/* ========================= */}
           <div className="bg-white rounded-2xl shadow-sm border p-5 mb-8">
 
             <div className="flex items-center gap-4 flex-wrap">
@@ -265,7 +302,6 @@ function HistoriqueGlobal() {
                 <span>Période :</span>
               </div>
 
-              {/* MOIS */}
               <select
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(e.target.value)}
@@ -278,7 +314,6 @@ function HistoriqueGlobal() {
                 ))}
               </select>
 
-              {/* ANNÉE */}
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(e.target.value)}
@@ -294,108 +329,60 @@ function HistoriqueGlobal() {
 
           </div>
 
-          {/* ========================= */}
           {/* 🔥 CARDS */}
-          {/* ========================= */}
           <div className="grid grid-cols-4 gap-6 mb-10">
 
-            {/* PRÉSENCES */}
             <div className="bg-green-50 border border-green-200 rounded-3xl p-6 shadow-sm">
-
               <div className="flex justify-between items-center">
-
                 <div>
-
-                  <p className="text-gray-500">
-                    Présences
-                  </p>
-
+                  <p className="text-gray-500">Présences</p>
                   <h2 className="text-5xl font-bold text-green-600 mt-5">
                     {presences}
                   </h2>
-
                 </div>
-
                 <FaUserCheck className="text-4xl text-green-500" />
-
               </div>
-
             </div>
 
-            {/* ABSENCES */}
             <div className="bg-red-50 border border-red-200 rounded-3xl p-6 shadow-sm">
-
               <div className="flex justify-between items-center">
-
                 <div>
-
-                  <p className="text-gray-500">
-                    Absences
-                  </p>
-
+                  <p className="text-gray-500">Absences</p>
                   <h2 className="text-5xl font-bold text-red-500 mt-5">
                     {absences}
                   </h2>
-
                 </div>
-
                 <FaUserTimes className="text-4xl text-red-500" />
-
               </div>
-
             </div>
 
-            {/* RETARDS */}
             <div className="bg-orange-50 border border-orange-200 rounded-3xl p-6 shadow-sm">
-
               <div className="flex justify-between items-center">
-
                 <div>
-
-                  <p className="text-gray-500">
-                    Retards
-                  </p>
-
+                  <p className="text-gray-500">Retards</p>
                   <h2 className="text-5xl font-bold text-orange-500 mt-5">
                     {retards}
                   </h2>
-
                 </div>
-
                 <FaClock className="text-4xl text-orange-500" />
-
               </div>
-
             </div>
 
-            {/* CONGÉS */}
             <div className="bg-purple-50 border border-purple-200 rounded-3xl p-6 shadow-sm">
-
               <div className="flex justify-between items-center">
-
                 <div>
-
-                  <p className="text-gray-500">
-                    Congés
-                  </p>
-
+                  <p className="text-gray-500">Congés</p>
                   <h2 className="text-5xl font-bold text-purple-600 mt-5">
                     {conges}
                   </h2>
-
                 </div>
-
                 <FaMugHot className="text-4xl text-purple-600" />
-
               </div>
-
             </div>
 
           </div>
 
-          {/* ========================= */}
           {/* 🔥 TABLE */}
-          {/* ========================= */}
           <div className="bg-white border rounded-3xl p-6 shadow-sm">
 
             <h2 className="text-2xl font-bold mb-2">
@@ -410,22 +397,16 @@ function HistoriqueGlobal() {
 
               <table className="w-full">
 
-                {/* HEADER */}
                 <thead>
-
                   <tr className="text-left text-gray-400 border-b">
-
                     <th className="pb-4">Date</th>
                     <th className="pb-4">Employé</th>
                     <th className="pb-4">Statut</th>
                     <th className="pb-4">Heure arrivée</th>
                     <th className="pb-4">Heure départ</th>
-
                   </tr>
-
                 </thead>
 
-                {/* BODY */}
                 <tbody>
 
                   {monthlyPointages.map((p, i) => (
@@ -435,17 +416,14 @@ function HistoriqueGlobal() {
                       className="border-b hover:bg-gray-50 transition"
                     >
 
-                      {/* DATE */}
                       <td className="py-5">
                         {new Date(p.date).toLocaleDateString()}
                       </td>
 
-                      {/* EMPLOYÉ */}
                       <td className="font-medium">
                         {p.firstName} {p.lastName}
                       </td>
 
-                      {/* STATUT */}
                       <td>
 
                         {p.category === "absence" ? (
@@ -470,15 +448,9 @@ function HistoriqueGlobal() {
 
                       </td>
 
-                      {/* ARRIVÉE */}
-                      <td>
-                        {p.arrival || "-"}
-                      </td>
+                      <td>{p.arrival || "-"}</td>
 
-                      {/* DÉPART */}
-                      <td>
-                        {p.departure || "-"}
-                      </td>
+                      <td>{p.departure || "-"}</td>
 
                     </tr>
 
@@ -493,6 +465,7 @@ function HistoriqueGlobal() {
           </div>
 
         </div>
+
       )}
 
       {/* ================================================= */}
@@ -500,18 +473,317 @@ function HistoriqueGlobal() {
       {/* ================================================= */}
       {tab === "salary" && (
 
-        <div className="bg-white rounded-3xl p-10 shadow-lg">
+        <div>
 
-          <h1 className="text-4xl font-bold mb-3">
-            Calcul des Salaires
-          </h1>
+          {/* HERO */}
+          <div className="bg-white/80 backdrop-blur-md border border-white/40 rounded-3xl p-8 shadow-xl mb-10">
 
-          <p className="text-gray-500">
-            Calcul automatique des salaires
-            en fonction des pointages mensuels.
-          </p>
+            <div className="flex items-center gap-4 mb-4">
+
+              <div className="bg-green-600 text-white p-4 rounded-2xl shadow-lg">
+                <FaDollarSign className="text-2xl" />
+              </div>
+
+              <div>
+
+                <span className="bg-green-100 text-green-700 px-4 py-1 rounded-full text-sm font-semibold">
+                  Gestion Salariale
+                </span>
+
+                <h1 className="text-5xl font-extrabold text-gray-800 mt-3">
+                  Calcul Automatique des Salaires
+                </h1>
+
+              </div>
+
+            </div>
+
+            <p className="text-gray-600 text-lg">
+              Consultez les heures travaillées, les présences,
+              les retards et les estimations salariales mensuelles.
+            </p>
+
+          </div>
+
+          {/* PARAMÈTRES */}
+          <div className="grid grid-cols-2 gap-6 mb-8">
+
+            {/* PÉRIODE */}
+            <div className="bg-white rounded-3xl p-6 shadow-lg border">
+
+              <div className="flex items-center gap-3 mb-6">
+                <FaCalendarAlt />
+                <h2 className="font-bold text-lg">
+                  Période de calcul
+                </h2>
+              </div>
+
+              <div className="flex gap-4">
+
+                <select
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                  className="bg-gray-100 px-5 py-3 rounded-xl border"
+                >
+                  {months.map((m, index) => (
+                    <option key={index} value={index}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                  className="bg-gray-100 px-5 py-3 rounded-xl border"
+                >
+                  <option value="2024">2024</option>
+                  <option value="2025">2025</option>
+                  <option value="2026">2026</option>
+                </select>
+
+              </div>
+
+            </div>
+
+            {/* DÉDUCTIONS */}
+            <div className="bg-white rounded-3xl p-6 shadow-lg border">
+
+              <h2 className="font-bold text-lg mb-6">
+                Paramètres de déduction
+              </h2>
+
+              <div className="grid grid-cols-2 gap-4">
+
+                <div>
+
+                  <label className="text-sm text-gray-500">
+                    Déduction par absence (€)
+                  </label>
+
+                  <input
+                    type="number"
+                    value={absenceDeduction}
+                    onChange={(e) =>
+                      setAbsenceDeduction(Number(e.target.value))
+                    }
+                    className="w-full mt-2 bg-gray-100 p-3 rounded-xl border"
+                  />
+
+                </div>
+
+                <div>
+
+                  <label className="text-sm text-gray-500">
+                    Déduction par retard (€)
+                  </label>
+
+                  <input
+                    type="number"
+                    value={retardDeduction}
+                    onChange={(e) =>
+                      setRetardDeduction(Number(e.target.value))
+                    }
+                    className="w-full mt-2 bg-gray-100 p-3 rounded-xl border"
+                  />
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* STATS */}
+          <div className="grid grid-cols-3 gap-6 mb-8">
+
+            <div className="bg-white rounded-3xl p-6 shadow-lg border">
+              <p className="text-gray-500 mb-4">
+                Salaire de base total
+              </p>
+
+              <h2 className="text-4xl font-bold text-green-600">
+                {salaireBaseTotal.toFixed(2)} €
+              </h2>
+            </div>
+
+            <div className="bg-white rounded-3xl p-6 shadow-lg border">
+              <p className="text-gray-500 mb-4">
+                Déductions totales
+              </p>
+
+              <h2 className="text-4xl font-bold text-red-500">
+                {deductionsTotal.toFixed(2)} €
+              </h2>
+            </div>
+
+            <div className="bg-white rounded-3xl p-6 shadow-lg border">
+              <p className="text-gray-500 mb-4">
+                Salaire net total
+              </p>
+
+              <h2 className="text-4xl font-bold text-blue-600">
+                {salaireNetTotal.toFixed(2)} €
+              </h2>
+            </div>
+
+          </div>
+
+          {/* TABLE SALAIRES */}
+          <div className="bg-white rounded-3xl p-6 shadow-lg border mb-8">
+
+            <h2 className="text-2xl font-bold mb-2">
+              Détails par Employé
+            </h2>
+
+            <p className="text-gray-400 mb-8">
+              Calcul détaillé pour {months[selectedMonth]} {selectedYear}
+            </p>
+
+            <div className="overflow-x-auto">
+
+              <table className="w-full">
+
+                <thead>
+
+                  <tr className="text-left text-gray-400 border-b">
+
+                    <th className="pb-4">Employé</th>
+                    <th className="pb-4">Poste</th>
+                    <th className="pb-4">Taux horaire</th>
+                    <th className="pb-4">Présences</th>
+                    <th className="pb-4">Absences</th>
+                    <th className="pb-4">Retards</th>
+                    <th className="pb-4">Heures travaillées</th>
+                    <th className="pb-4">Salaire de base</th>
+                    <th className="pb-4">Déductions</th>
+                    <th className="pb-4">Salaire net</th>
+
+                  </tr>
+
+                </thead>
+
+                <tbody>
+
+                  {monthlyPointages.map((p, i) => {
+
+                    const hours = parseFloat(p.hours) || 0
+                    const tauxHoraire = 15
+
+                    const salaireBase =
+                      hours * tauxHoraire
+
+                    let deduction = 0
+
+                    if (p.category === "absence") {
+                      deduction += absenceDeduction
+                    }
+
+                    if (p.status === "En retard") {
+                      deduction += retardDeduction
+                    }
+
+                    const salaireNet =
+                      salaireBase - deduction
+
+                    return (
+
+                      <tr
+                        key={i}
+                        className="border-b hover:bg-gray-50 transition"
+                      >
+
+                        <td className="py-5 font-semibold">
+                          {p.firstName} {p.lastName}
+                        </td>
+
+                        <td>
+                          <span className="bg-gray-100 px-3 py-1 rounded-full text-xs">
+                            Employé
+                          </span>
+                        </td>
+
+                        <td>
+                          {tauxHoraire} €/h
+                        </td>
+
+                        <td>
+                          <span className="bg-black text-white px-3 py-1 rounded-full text-xs">
+                            1
+                          </span>
+                        </td>
+
+                        <td>
+                          <span className="bg-red-500 text-white px-3 py-1 rounded-full text-xs">
+                            {p.category === "absence" ? 1 : 0}
+                          </span>
+                        </td>
+
+                        <td>
+                          <span className="bg-gray-200 px-3 py-1 rounded-full text-xs">
+                            {p.status === "En retard" ? 1 : 0}
+                          </span>
+                        </td>
+
+                        <td>{hours}h</td>
+
+                        <td>
+                          {salaireBase.toFixed(2)} €
+                        </td>
+
+                        <td className="text-red-500">
+                          -{deduction.toFixed(2)} €
+                        </td>
+
+                        <td className="font-bold text-green-600">
+                          {salaireNet.toFixed(2)} €
+                        </td>
+
+                      </tr>
+
+                    )
+
+                  })}
+
+                </tbody>
+
+              </table>
+
+            </div>
+
+          </div>
+
+          {/* ACTIONS */}
+          <div className="bg-white rounded-3xl p-6 shadow-lg border">
+
+            <h2 className="font-bold text-xl mb-6">
+              Actions
+            </h2>
+
+            <div className="flex gap-4 flex-wrap">
+
+              <button className="bg-black text-white px-6 py-3 rounded-2xl hover:scale-105 transition flex items-center gap-2">
+                <FaCheckCircle />
+                Valider les salaires
+              </button>
+
+              <button className="bg-red-500 text-white px-6 py-3 rounded-2xl hover:scale-105 transition flex items-center gap-2">
+                <FaFilePdf />
+                Exporter PDF
+              </button>
+
+              <button className="bg-green-600 text-white px-6 py-3 rounded-2xl hover:scale-105 transition flex items-center gap-2">
+                <FaFileExcel />
+                Exporter Excel
+              </button>
+
+            </div>
+
+          </div>
 
         </div>
+
       )}
 
     </div>
