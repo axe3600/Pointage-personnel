@@ -12,14 +12,19 @@ router.post("/", async (req, res) => {
 
     const salaries = req.body
 
-    // 🔥 VÉRIFICATION TABLEAU
+    // 🔥 VÉRIFICATION
     if (!Array.isArray(salaries)) {
+
       return res.status(400).json({
-        message: "Les données doivent être un tableau"
+        message:
+          "Les données doivent être un tableau"
       })
     }
 
-    // 🔥 VÉRIFIER DOUBLONS
+    // 🔥 STOCKAGE DOUBLONS
+    const duplicates = []
+
+    // 🔥 BOUCLE
     for (const salary of salaries) {
 
       const existingSalary =
@@ -34,14 +39,23 @@ router.post("/", async (req, res) => {
       // 🔥 SI EXISTE
       if (existingSalary) {
 
-        return res.status(400).json({
-          message:
-            `Le salaire de ${salary.employe} pour ${salary.mois} ${salary.annee} existe déjà`
-        })
+        duplicates.push(
+          `${salary.employe}`
+        )
       }
     }
 
-    // 🔥 ENREGISTREMENT
+    // 🔥 SI DOUBLONS
+    if (duplicates.length > 0) {
+
+      return res.status(400).json({
+
+        message:
+          `Salaires déjà enregistrés pour : ${duplicates.join(", ")}`
+      })
+    }
+
+    // 🔥 INSERTION
     const saved =
       await Salary.insertMany(salaries)
 
