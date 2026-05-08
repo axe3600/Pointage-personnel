@@ -648,7 +648,7 @@ function HistoriqueGlobal() {
                 <thead>
 
                   <tr className="text-left text-gray-400 border-b">
-
+                    <th className="pb-4">Date</th>
                     <th className="pb-4">Employé</th>
                     <th className="pb-4">Poste</th>
                     <th className="pb-4">Taux horaire</th>
@@ -665,88 +665,136 @@ function HistoriqueGlobal() {
                 </thead>
 
                 <tbody>
+  {Object.values(
+    monthlyPointages.reduce((acc, p) => {
+      const employeeKey =
+        `${p.firstName} ${p.lastName}`
 
-                  {monthlyPointages.map((p, i) => {
+      if (!acc[employeeKey]) {
+        acc[employeeKey] = {
+          employee:
+            `${p.firstName} ${p.lastName}`,
+          date: new Date(p.date).toLocaleDateString(),
+          presences: 0,
+          absences: 0,
+          retards: 0,
+          heures: 0
+        }
+      }
 
-                    const hours = parseFloat(p.hours) || 0
-                    const tauxHoraire = 15
+      // 🔥 PRÉSENCE
+      if (
+        p.status === "Présent" ||
+        p.status === "En retard"
+      ) {
+        acc[employeeKey].presences += 1
+      }
 
-                    const salaireBase =
-                      hours * tauxHoraire
+      // 🔥 ABSENCE
+      if (p.category === "absence") {
+        acc[employeeKey].absences += 1
+      }
 
-                    let deduction = 0
+      // 🔥 RETARD
+      if (p.status === "En retard") {
+        acc[employeeKey].retards += 1
+      }
 
-                    if (p.category === "absence") {
-                      deduction += absenceDeduction
-                    }
+      // 🔥 HEURES
+      acc[employeeKey].heures +=
+        parseFloat(p.hours) || 0
 
-                    if (p.status === "En retard") {
-                      deduction += retardDeduction
-                    }
+      return acc
+    }, {})
+  ).map((employee, i) => {
 
-                    const salaireNet =
-                      salaireBase - deduction
+    const tauxHoraire = 15
 
-                    return (
+    // 🔥 SALAIRE BASE
+    const salaireBase =
+      employee.heures * tauxHoraire
 
-                      <tr
-                        key={i}
-                        className="border-b hover:bg-gray-50 transition"
-                      >
+    // 🔥 DÉDUCTIONS
+    const deductions =
+      (employee.absences * absenceDeduction) +
+      (employee.retards * retardDeduction)
 
-                        <td className="py-5 font-semibold">
-                          {p.firstName} {p.lastName}
-                        </td>
+    // 🔥 SALAIRE NET
+    const salaireNet =
+      salaireBase - deductions
 
-                        <td>
-                          <span className="bg-gray-100 px-3 py-1 rounded-full text-xs">
-                            Employé
-                          </span>
-                        </td>
+    return (
+      <tr
+        key={i}
+        className="border-b hover:bg-gray-50 transition"
+      >
 
-                        <td>
-                          {tauxHoraire} €/h
-                        </td>
+        {/* DATE */}
+        <td className="py-5">
+          {employee.date}
+        </td>
 
-                        <td>
-                          <span className="bg-black text-white px-3 py-1 rounded-full text-xs">
-                            1
-                          </span>
-                        </td>
+        {/* EMPLOYÉ */}
+        <td className="font-semibold">
+          {employee.employee}
+        </td>
 
-                        <td>
-                          <span className="bg-red-500 text-white px-3 py-1 rounded-full text-xs">
-                            {p.category === "absence" ? 1 : 0}
-                          </span>
-                        </td>
+        {/* POSTE */}
+        <td>
+          <span className="bg-gray-100 px-3 py-1 rounded-full text-xs">
+            Employé
+          </span>
+        </td>
 
-                        <td>
-                          <span className="bg-gray-200 px-3 py-1 rounded-full text-xs">
-                            {p.status === "En retard" ? 1 : 0}
-                          </span>
-                        </td>
+        {/* TAUX */}
+        <td>
+          {tauxHoraire} €/h
+        </td>
 
-                        <td>{hours}h</td>
+        {/* PRÉSENCES */}
+        <td>
+          <span className="bg-black text-white px-3 py-1 rounded-full text-xs">
+            {employee.presences}
+          </span>
+        </td>
 
-                        <td>
-                          {salaireBase.toFixed(2)} €
-                        </td>
+        {/* ABSENCES */}
+        <td>
+          <span className="bg-red-500 text-white px-3 py-1 rounded-full text-xs">
+            {employee.absences}
+          </span>
+        </td>
 
-                        <td className="text-red-500">
-                          -{deduction.toFixed(2)} €
-                        </td>
+        {/* RETARDS */}
+        <td>
+          <span className="bg-orange-200 text-orange-700 px-3 py-1 rounded-full text-xs">
+            {employee.retards}
+          </span>
+        </td>
 
-                        <td className="font-bold text-green-600">
-                          {salaireNet.toFixed(2)} €
-                        </td>
+        {/* HEURES */}
+        <td>
+          {employee.heures.toFixed(2)}h
+        </td>
 
-                      </tr>
+        {/* SALAIRE BASE */}
+        <td>
+          {salaireBase.toFixed(2)} €
+        </td>
 
-                    )
+        {/* DÉDUCTIONS */}
+        <td className="text-red-500">
+          -{deductions.toFixed(2)} €
+        </td>
 
-                  })}
-
-                </tbody>
+        {/* SALAIRE NET */}
+        <td className="font-bold text-green-600">
+          {salaireNet.toFixed(2)} €
+        </td>
+      </tr>
+    )
+  })}
+</tbody>
 
               </table>
 
