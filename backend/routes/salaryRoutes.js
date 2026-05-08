@@ -51,7 +51,7 @@ router.post("/", async (req, res) => {
       return res.status(400).json({
 
         message:
-          `Salaires déjà enregistrés pour : ${duplicates.join(", ")}`
+        "Les salaires des employés sont déjà enregistrés pour cette période"
       })
     }
 
