@@ -160,8 +160,10 @@ function HistoriqueGlobal() {
 
   }, 0)
 
-  const salaireNetTotal = 
-    salaireBaseTotal - deductionsTotal
+  const salaireNetTotal = Math.max(
+    salaireBaseTotal - deductionsTotal,
+    0
+  )
 
   // =========================
   // 🔥 MOIS
@@ -180,6 +182,88 @@ function HistoriqueGlobal() {
     "Novembre",
     "Décembre"
   ]
+
+// =========================
+// 🔥 VALIDER SALAIRES
+// =========================
+  const handleValidateSalaries = async () => {
+
+    try {
+  
+      const salairesData = Object.values(
+        monthlyPointages.reduce((acc, p) => {
+  
+          const employeeKey = `${p.firstName} ${p.lastName}`
+  
+          if (!acc[employeeKey]) {
+            acc[employeeKey] = {
+              employe: employeeKey,
+              mois: months[selectedMonth],
+              annee: selectedYear,
+              presences: 0,
+              absences: 0,
+              retards: 0,
+              heures: 0
+            }
+          }
+  
+          if (
+            p.status === "Présent" ||
+            p.status === "En retard"
+          ) {
+            acc[employeeKey].presences += 1
+          }
+  
+          if (p.category === "absence") {
+            acc[employeeKey].absences += 1
+          }
+  
+          if (p.status === "En retard") {
+            acc[employeeKey].retards += 1
+          }
+  
+          acc[employeeKey].heures +=
+            parseFloat(p.hours) || 0
+  
+          return acc
+  
+        }, {})
+      ).map((employee) => {
+  
+        const salaireBase =
+          employee.heures * hourSalary
+  
+        const deductions =
+          (employee.absences * absenceDeduction) +
+          (employee.retards * retardDeduction)
+  
+        const salaireNet =
+          salaireBase - deductions
+  
+        return {
+          ...employee,
+          tauxHoraire: hourSalary,
+          salaireBase,
+          deductions,
+          salaireNet,
+          devise: currency
+        }
+      })
+  
+      await axios.post(
+        `${API}/salaires`,
+        salairesData
+      )
+  
+      alert("✅ Salaires validés avec succès")
+  
+    } catch (err) {
+  
+      console.log(err)
+  
+      alert("❌ Erreur lors de la validation")
+    }
+  }  
 
   return (
 
@@ -816,10 +900,13 @@ function HistoriqueGlobal() {
 
             <div className="flex gap-4 flex-wrap">
 
-              <button className="bg-black text-white px-6 py-3 rounded-2xl hover:scale-105 transition flex items-center gap-2">
+            <button
+              onClick={handleValidateSalaries}
+              className="bg-black text-white px-6 py-3 rounded-2xl hover:scale-105 transition flex items-center gap-2"
+            >
                 <FaCheckCircle />
-                Valider les salaires
-              </button>
+               Valider les salaires
+            </button>
 
               <button className="bg-red-500 text-white px-6 py-3 rounded-2xl hover:scale-105 transition flex items-center gap-2">
                 <FaFilePdf />

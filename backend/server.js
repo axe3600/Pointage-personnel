@@ -9,6 +9,7 @@ import leaveRoutes from "./routes/leaveRoutes.js"
 dotenv.config()
 
 const app = express()
+const salairesRoutes = require("./routes/salaires")
 
 // ✅ CORS (UNE SEULE FOIS)
 app.use(cors({
@@ -22,6 +23,7 @@ app.use(express.json())
 app.use("/api/pointages", pointageRoutes)
 app.use("/api/employees", employeeRoutes)
 app.use("/api/leaves", leaveRoutes)
+app.use("/api/salaires", salairesRoutes)
 
 // 🔥 TEST
 app.get("/", (req, res) => {
