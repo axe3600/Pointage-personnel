@@ -49,6 +49,7 @@ function HistoriqueGlobal() {
   // =========================
   const [absenceDeduction, setAbsenceDeduction] = useState(100)
   const [retardDeduction, setRetardDeduction] = useState(10)
+  const [hourSalary, setHourSalary] = useState(15)
 
   // =========================
   // 🔥 URL API
@@ -136,7 +137,7 @@ function HistoriqueGlobal() {
   const salaireBaseTotal = monthlyPointages.reduce((acc, p) => {
 
     const hours = parseFloat(p.hours) || 0
-    return acc + (hours * 1500)
+    return acc + (hours * hourSalary)
 
   }, 0)
 
@@ -553,7 +554,7 @@ function HistoriqueGlobal() {
                 Paramètres de déduction
               </h2>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
 
                 <div>
 
@@ -588,6 +589,31 @@ function HistoriqueGlobal() {
                   />
 
                 </div>
+
+                <div>
+                  <label className="text-sm text-gray-500">
+                       Salaire par heure (€)
+                  </label>
+
+               <input
+                type="number"
+                value={hourSalary}
+                onChange={(e) =>
+               setHourSalary(Number(e.target.value))
+                }
+               className="
+                 w-full
+                 mt-2
+                 bg-gray-100
+                 p-3
+                 rounded-xl
+                 border
+                outline-none
+                focus:ring-2
+                focus:ring-green-400
+                "
+               />
+              </div>
 
               </div>
 
@@ -708,7 +734,7 @@ function HistoriqueGlobal() {
     }, {})
   ).map((employee, i) => {
 
-    const tauxHoraire = 15
+    const tauxHoraire = hourSalary
 
     // 🔥 SALAIRE BASE
     const salaireBase =
