@@ -26,13 +26,13 @@ function HistoriqueGlobal() {
   const [tab, setTab] = useState("history")
 
   // =========================
-  // 🔥 DONNÉES BACKEND
+  // 🔥 DONNÉES
   // =========================
   const [pointages, setPointages] = useState([])
   const [leaves, setLeaves] = useState([])
 
   // =========================
-  // 🔥 FILTRES PÉRIODE
+  // 🔥 FILTRES
   // =========================
   const currentDate = new Date()
 
@@ -45,29 +45,31 @@ function HistoriqueGlobal() {
   )
 
   // =========================
-  // 🔥 DÉDUCTIONS
+  // 🔥 PARAMÈTRES SALAIRES
   // =========================
   const [absenceDeduction, setAbsenceDeduction] = useState(100)
   const [retardDeduction, setRetardDeduction] = useState(10)
   const [hourSalary, setHourSalary] = useState(15)
 
+  // 🔥 DEVISE
+  const [currency, setCurrency] = useState("FCFA")
+
   // =========================
-  // 🔥 URL API
+  // 🔥 API
   // =========================
   const API = "https://pointage-personnel.onrender.com/api"
 
   // =========================
-  // 🔥 CHARGEMENT INITIAL
+  // 🔥 CHARGEMENT
   // =========================
   useEffect(() => {
     fetchData()
   }, [])
 
   // =========================
-  // 🔥 FETCH GLOBAL
+  // 🔥 FETCH
   // =========================
   const fetchData = async () => {
-
     try {
 
       const [pointagesRes, leavesRes] = await Promise.all([
@@ -132,11 +134,12 @@ function HistoriqueGlobal() {
   const conges = monthlyLeaves.length
 
   // =========================
-  // 🔥 CALCULS SALAIRES
+  // 🔥 CALCULS
   // =========================
   const salaireBaseTotal = monthlyPointages.reduce((acc, p) => {
 
     const hours = parseFloat(p.hours) || 0
+
     return acc + (hours * hourSalary)
 
   }, 0)
@@ -157,7 +160,7 @@ function HistoriqueGlobal() {
 
   }, 0)
 
-  const salaireNetTotal =
+  const salaireNetTotal = 
     salaireBaseTotal - deductionsTotal
 
   // =========================
@@ -192,7 +195,7 @@ function HistoriqueGlobal() {
       {/* ========================= */}
       <div className="flex justify-between items-center mb-8">
 
-        {/* 🔥 RETOUR */}
+        {/* RETOUR */}
         <button
           onClick={() => navigate("/")}
           className="
@@ -208,7 +211,6 @@ function HistoriqueGlobal() {
             rounded-2xl
             shadow-lg
             hover:scale-105
-            hover:shadow-2xl
             transition-all
             duration-300
             font-semibold
@@ -218,29 +220,27 @@ function HistoriqueGlobal() {
           Retour Accueil
         </button>
 
-        {/* 🔥 ONGLETS */}
+        {/* ONGLETS */}
         <div className="flex gap-3">
 
-          {/* HISTORIQUE */}
           <button
             onClick={() => setTab("history")}
             className={`px-5 py-3 rounded-2xl text-sm flex items-center gap-2 transition ${
               tab === "history"
-                ? "bg-black text-white shadow-lg"
-                : "bg-white border hover:bg-gray-50"
+                ? "bg-black text-white"
+                : "bg-white border"
             }`}
           >
             <FaCalendarAlt />
             Historique Mensuel
           </button>
 
-          {/* SALAIRES */}
           <button
             onClick={() => setTab("salary")}
             className={`px-5 py-3 rounded-2xl text-sm flex items-center gap-2 transition ${
               tab === "salary"
-                ? "bg-black text-white shadow-lg"
-                : "bg-white border hover:bg-gray-50"
+                ? "bg-black text-white"
+                : "bg-white border"
             }`}
           >
             <FaDollarSign />
@@ -258,42 +258,35 @@ function HistoriqueGlobal() {
 
         <div>
 
-          {/* 🔥 HEADER HERO */}
-          <div className="bg-white/80 backdrop-blur-md border border-white/40 rounded-3xl p-8 shadow-xl mb-10">
+          {/* HERO */}
+          <div className="bg-white rounded-3xl p-8 shadow-xl mb-10">
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4 mb-4">
+
+              <div className="bg-orange-500 text-white p-4 rounded-2xl">
+                <FaCalendarAlt className="text-2xl" />
+              </div>
 
               <div>
+                <span className="bg-orange-100 text-orange-700 px-4 py-1 rounded-full text-sm font-semibold">
+                  Historique Global
+                </span>
 
-                <div className="flex items-center gap-3 mb-3">
-
-                  <div className="bg-orange-500 text-white p-3 rounded-2xl shadow-lg">
-                    <FaCalendarAlt className="text-2xl" />
-                  </div>
-
-                  <span className="bg-orange-100 text-orange-700 px-4 py-1 rounded-full text-sm font-semibold">
-                    Historique Global
-                  </span>
-
-                </div>
-
-                <h1 className="text-5xl font-extrabold text-gray-800 leading-tight mb-3">
+                <h1 className="text-5xl font-extrabold text-gray-800 mt-3">
                   Historique Mensuel des Pointages
                 </h1>
-
-                <p className="text-gray-600 text-lg max-w-3xl leading-relaxed">
-                  Consultez l'historique complet des présences,
-                  absences, retards et congés du personnel
-                  par période mensuelle.
-                </p>
-
               </div>
 
             </div>
 
+            <p className="text-gray-600 text-lg">
+              Consultez l'historique complet des présences,
+              absences, retards et congés du personnel.
+            </p>
+
           </div>
 
-          {/* 🔥 PÉRIODE */}
+          {/* PÉRIODE */}
           <div className="bg-white rounded-2xl shadow-sm border p-5 mb-8">
 
             <div className="flex items-center gap-4 flex-wrap">
@@ -306,7 +299,7 @@ function HistoriqueGlobal() {
               <select
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(e.target.value)}
-                className="bg-gray-100 px-5 py-3 rounded-xl outline-none border"
+                className="bg-gray-100 px-5 py-3 rounded-xl border"
               >
                 {months.map((m, index) => (
                   <option key={index} value={index}>
@@ -318,7 +311,7 @@ function HistoriqueGlobal() {
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(e.target.value)}
-                className="bg-gray-100 px-5 py-3 rounded-xl outline-none border"
+                className="bg-gray-100 px-5 py-3 rounded-xl border"
               >
                 <option value="2024">2024</option>
                 <option value="2025">2025</option>
@@ -330,7 +323,7 @@ function HistoriqueGlobal() {
 
           </div>
 
-          {/* 🔥 CARDS */}
+          {/* STATS */}
           <div className="grid grid-cols-4 gap-6 mb-10">
 
             <div className="bg-green-50 border border-green-200 rounded-3xl p-6 shadow-sm">
@@ -383,21 +376,16 @@ function HistoriqueGlobal() {
 
           </div>
 
-          {/* 🔥 TABLE */}
-          <div className="bg-white border rounded-3xl p-6 shadow-sm">
-
+   {/* 🔥 TABLE */}
+   <div className="bg-white border rounded-3xl p-6 shadow-sm">
             <h2 className="text-2xl font-bold mb-2">
               Détails des Pointages
             </h2>
-
             <p className="text-gray-400 text-sm mb-6">
               Historique complet pour {months[selectedMonth]} {selectedYear}
             </p>
-
             <div className="overflow-x-auto">
-
               <table className="w-full">
-
                 <thead>
                   <tr className="text-left text-gray-400 border-b">
                     <th className="pb-4">Date</th>
@@ -407,62 +395,40 @@ function HistoriqueGlobal() {
                     <th className="pb-4">Heure départ</th>
                   </tr>
                 </thead>
-
                 <tbody>
-
                   {monthlyPointages.map((p, i) => (
-
                     <tr
                       key={i}
                       className="border-b hover:bg-gray-50 transition"
                     >
-
                       <td className="py-5">
                         {new Date(p.date).toLocaleDateString()}
                       </td>
-
                       <td className="font-medium">
                         {p.firstName} {p.lastName}
                       </td>
-
                       <td>
-
                         {p.category === "absence" ? (
-
                           <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs">
                             Absent
                           </span>
-
                         ) : p.status === "En retard" ? (
-
                           <span className="bg-orange-100 text-orange-500 px-3 py-1 rounded-full text-xs">
                             En retard
                           </span>
-
                         ) : (
-
                           <span className="bg-green-100 text-green-600 px-3 py-1 rounded-full text-xs">
                             Présent
                           </span>
-
                         )}
-
                       </td>
-
                       <td>{p.arrival || "-"}</td>
-
                       <td>{p.departure || "-"}</td>
-
                     </tr>
-
                   ))}
-
                 </tbody>
-
               </table>
-
             </div>
-
           </div>
 
         </div>
@@ -477,16 +443,15 @@ function HistoriqueGlobal() {
         <div>
 
           {/* HERO */}
-          <div className="bg-white/80 backdrop-blur-md border border-white/40 rounded-3xl p-8 shadow-xl mb-10">
+          <div className="bg-white rounded-3xl p-8 shadow-xl mb-10">
 
             <div className="flex items-center gap-4 mb-4">
 
-              <div className="bg-green-600 text-white p-4 rounded-2xl shadow-lg">
+              <div className="bg-green-600 text-white p-4 rounded-2xl">
                 <FaDollarSign className="text-2xl" />
               </div>
 
               <div>
-
                 <span className="bg-green-100 text-green-700 px-4 py-1 rounded-full text-sm font-semibold">
                   Gestion Salariale
                 </span>
@@ -494,14 +459,12 @@ function HistoriqueGlobal() {
                 <h1 className="text-5xl font-extrabold text-gray-800 mt-3">
                   Calcul Automatique des Salaires
                 </h1>
-
               </div>
 
             </div>
 
             <p className="text-gray-600 text-lg">
-              Consultez les heures travaillées, les présences,
-              les retards et les estimations salariales mensuelles.
+              Consultez les heures travaillées et les salaires mensuels.
             </p>
 
           </div>
@@ -547,19 +510,19 @@ function HistoriqueGlobal() {
 
             </div>
 
-            {/* DÉDUCTIONS */}
+            {/* PARAMÈTRES */}
             <div className="bg-white rounded-3xl p-6 shadow-lg border">
 
               <h2 className="font-bold text-lg mb-6">
                 Paramètres de déduction
               </h2>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-4 gap-4">
 
+                {/* ABSENCE */}
                 <div>
-
                   <label className="text-sm text-gray-500">
-                    Déduction par absence (€)
+                    Déduction absence
                   </label>
 
                   <input
@@ -570,13 +533,12 @@ function HistoriqueGlobal() {
                     }
                     className="w-full mt-2 bg-gray-100 p-3 rounded-xl border"
                   />
-
                 </div>
 
+                {/* RETARD */}
                 <div>
-
                   <label className="text-sm text-gray-500">
-                    Déduction par retard (€)
+                    Déduction retard
                   </label>
 
                   <input
@@ -587,33 +549,52 @@ function HistoriqueGlobal() {
                     }
                     className="w-full mt-2 bg-gray-100 p-3 rounded-xl border"
                   />
-
                 </div>
 
+                {/* SALAIRE HEURE */}
                 <div>
                   <label className="text-sm text-gray-500">
-                       Salaire par heure (€)
+                    Salaire / heure
                   </label>
 
-               <input
-                type="number"
-                value={hourSalary}
-                onChange={(e) =>
-               setHourSalary(Number(e.target.value))
-                }
-               className="
-                 w-full
-                 mt-2
-                 bg-gray-100
-                 p-3
-                 rounded-xl
-                 border
-                outline-none
-                focus:ring-2
-                focus:ring-green-400
-                "
-               />
-              </div>
+                  <input
+                    type="number"
+                    value={hourSalary}
+                    onChange={(e) =>
+                      setHourSalary(Number(e.target.value))
+                    }
+                    className="w-full mt-2 bg-gray-100 p-3 rounded-xl border"
+                  />
+                </div>
+
+                {/* DEVISE */}
+                <div>
+
+                  <label className="text-sm text-gray-500">
+                    Devise
+                  </label>
+
+                  <select
+                    value={currency}
+                    onChange={(e) =>
+                      setCurrency(e.target.value)
+                    }
+                    className="
+                      w-full
+                      mt-2
+                      bg-gray-100
+                      p-3
+                      rounded-xl
+                      border
+                    "
+                  >
+                    <option value="FCFA">FCFA</option>
+                    <option value="€">€ Euro</option>
+                    <option value="$">$ Dollar</option>
+                    <option value="£">£ Livre</option>
+                  </select>
+
+                </div>
 
               </div>
 
@@ -630,7 +611,7 @@ function HistoriqueGlobal() {
               </p>
 
               <h2 className="text-4xl font-bold text-green-600">
-                {salaireBaseTotal.toFixed(2)} €
+                {salaireBaseTotal.toFixed(2)} {currency}
               </h2>
             </div>
 
@@ -640,7 +621,7 @@ function HistoriqueGlobal() {
               </p>
 
               <h2 className="text-4xl font-bold text-red-500">
-                {deductionsTotal.toFixed(2)} €
+                {deductionsTotal.toFixed(2)} {currency}
               </h2>
             </div>
 
@@ -650,13 +631,13 @@ function HistoriqueGlobal() {
               </p>
 
               <h2 className="text-4xl font-bold text-blue-600">
-                {salaireNetTotal.toFixed(2)} €
+                {salaireNetTotal.toFixed(2)} {currency}
               </h2>
             </div>
 
           </div>
 
-          {/* TABLE SALAIRES */}
+          {/* TABLE */}
           <div className="bg-white rounded-3xl p-6 shadow-lg border mb-8">
 
             <h2 className="text-2xl font-bold mb-2">
@@ -674,15 +655,15 @@ function HistoriqueGlobal() {
                 <thead>
 
                   <tr className="text-left text-gray-400 border-b">
-                    <th className="pb-4">Date</th>
+
                     <th className="pb-4">Employé</th>
                     <th className="pb-4">Poste</th>
                     <th className="pb-4">Taux horaire</th>
                     <th className="pb-4">Présences</th>
                     <th className="pb-4">Absences</th>
                     <th className="pb-4">Retards</th>
-                    <th className="pb-4">Heures travaillées</th>
-                    <th className="pb-4">Salaire de base</th>
+                    <th className="pb-4">Heures</th>
+                    <th className="pb-4">Salaire base</th>
                     <th className="pb-4">Déductions</th>
                     <th className="pb-4">Salaire net</th>
 
@@ -691,136 +672,134 @@ function HistoriqueGlobal() {
                 </thead>
 
                 <tbody>
-  {Object.values(
-    monthlyPointages.reduce((acc, p) => {
-      const employeeKey =
-        `${p.firstName} ${p.lastName}`
 
-      if (!acc[employeeKey]) {
-        acc[employeeKey] = {
-          employee:
-            `${p.firstName} ${p.lastName}`,
-          date: new Date(p.date).toLocaleDateString(),
-          presences: 0,
-          absences: 0,
-          retards: 0,
-          heures: 0
-        }
-      }
+                  {Object.values(
 
-      // 🔥 PRÉSENCE
-      if (
-        p.status === "Présent" ||
-        p.status === "En retard"
-      ) {
-        acc[employeeKey].presences += 1
-      }
+                    monthlyPointages.reduce((acc, p) => {
 
-      // 🔥 ABSENCE
-      if (p.category === "absence") {
-        acc[employeeKey].absences += 1
-      }
+                      const employeeKey =
+                        `${p.firstName} ${p.lastName}`
 
-      // 🔥 RETARD
-      if (p.status === "En retard") {
-        acc[employeeKey].retards += 1
-      }
+                      if (!acc[employeeKey]) {
 
-      // 🔥 HEURES
-      acc[employeeKey].heures +=
-        parseFloat(p.hours) || 0
+                        acc[employeeKey] = {
+                          employee:
+                            `${p.firstName} ${p.lastName}`,
+                          presences: 0,
+                          absences: 0,
+                          retards: 0,
+                          heures: 0
+                        }
+                      }
 
-      return acc
-    }, {})
-  ).map((employee, i) => {
+                      if (
+                        p.status === "Présent" ||
+                        p.status === "En retard"
+                      ) {
+                        acc[employeeKey].presences += 1
+                      }
 
-    const tauxHoraire = hourSalary
+                      if (p.category === "absence") {
+                        acc[employeeKey].absences += 1
+                      }
 
-    // 🔥 SALAIRE BASE
-    const salaireBase =
-      employee.heures * tauxHoraire
+                      if (p.status === "En retard") {
+                        acc[employeeKey].retards += 1
+                      }
 
-    // 🔥 DÉDUCTIONS
-    const deductions =
-      (employee.absences * absenceDeduction) +
-      (employee.retards * retardDeduction)
+                      acc[employeeKey].heures +=
+                        parseFloat(p.hours) || 0
 
-    // 🔥 SALAIRE NET
-    const salaireNet =
-      salaireBase - deductions
+                      return acc
 
-    return (
-      <tr
-        key={i}
-        className="border-b hover:bg-gray-50 transition"
-      >
+                    }, {})
 
-        {/* DATE */}
-        <td className="py-5">
-          {employee.date}
-        </td>
+                  ).map((employee, i) => {
 
-        {/* EMPLOYÉ */}
-        <td className="font-semibold">
-          {employee.employee}
-        </td>
+                    const tauxHoraire = hourSalary
 
-        {/* POSTE */}
-        <td>
-          <span className="bg-gray-100 px-3 py-1 rounded-full text-xs">
-            Employé
-          </span>
-        </td>
+                    const salaireBase =
+                      employee.heures * tauxHoraire
 
-        {/* TAUX */}
-        <td>
-          {tauxHoraire} €/h
-        </td>
+                    const deductions =
+                      (employee.absences * absenceDeduction) +
+                      (employee.retards * retardDeduction)
 
-        {/* PRÉSENCES */}
-        <td>
-          <span className="bg-black text-white px-3 py-1 rounded-full text-xs">
-            {employee.presences}
-          </span>
-        </td>
+                    const salaireNet =
+                      salaireBase - deductions
 
-        {/* ABSENCES */}
-        <td>
-          <span className="bg-red-500 text-white px-3 py-1 rounded-full text-xs">
-            {employee.absences}
-          </span>
-        </td>
+                    return (
 
-        {/* RETARDS */}
-        <td>
-          <span className="bg-orange-200 text-orange-700 px-3 py-1 rounded-full text-xs">
-            {employee.retards}
-          </span>
-        </td>
+                      <tr
+                        key={i}
+                        className="border-b hover:bg-gray-50 transition"
+                      >
 
-        {/* HEURES */}
-        <td>
-          {employee.heures.toFixed(2)}h
-        </td>
+                        {/* EMPLOYÉ */}
+                        <td className="py-5 font-semibold">
+                          {employee.employee}
+                        </td>
 
-        {/* SALAIRE BASE */}
-        <td>
-          {salaireBase.toFixed(2)} €
-        </td>
+                        {/* POSTE */}
+                        <td>
+                          <span className="bg-gray-100 px-3 py-1 rounded-full text-xs">
+                            Employé
+                          </span>
+                        </td>
 
-        {/* DÉDUCTIONS */}
-        <td className="text-red-500">
-          -{deductions.toFixed(2)} €
-        </td>
+                        {/* TAUX */}
+                        <td>
+                          {tauxHoraire} {currency}/h
+                        </td>
 
-        {/* SALAIRE NET */}
-        <td className="font-bold text-green-600">
-          {salaireNet.toFixed(2)} €
-        </td>
-      </tr>
-    )
-  })}
-</tbody>
+                        {/* PRÉSENCES */}
+                        <td>
+                          <span className="bg-black text-white px-3 py-1 rounded-full text-xs">
+                            {employee.presences}
+                          </span>
+                        </td>
+
+                        {/* ABSENCES */}
+                        <td>
+                          <span className="bg-red-500 text-white px-3 py-1 rounded-full text-xs">
+                            {employee.absences}
+                          </span>
+                        </td>
+
+                        {/* RETARDS */}
+                        <td>
+                          <span className="bg-orange-200 text-orange-700 px-3 py-1 rounded-full text-xs">
+                            {employee.retards}
+                          </span>
+                        </td>
+
+                        {/* HEURES */}
+                        <td>
+                          {employee.heures.toFixed(2)}h
+                        </td>
+
+                        {/* SALAIRE BASE */}
+                        <td>
+                          {salaireBase.toFixed(2)} {currency}
+                        </td>
+
+                        {/* DÉDUCTIONS */}
+                        <td className="text-red-500">
+                          -{deductions.toFixed(2)} {currency}
+                        </td>
+
+                        {/* SALAIRE NET */}
+                        <td className="font-bold text-green-600">
+                          {salaireNet.toFixed(2)} {currency}
+                        </td>
+
+                      </tr>
+
+                    )
+
+                  })}
+
+                </tbody>
 
               </table>
 
@@ -864,4 +843,4 @@ function HistoriqueGlobal() {
   )
 }
 
-export default HistoriqueGlobal;
+export default HistoriqueGlobal
