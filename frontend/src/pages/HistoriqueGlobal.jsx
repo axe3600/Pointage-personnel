@@ -258,10 +258,13 @@ function HistoriqueGlobal() {
       alert("✅ Salaires validés avec succès")
   
     } catch (err) {
-  
+
       console.log(err)
-  
-      alert("❌ Erreur lors de la validation")
+    
+      alert(
+        err.response?.data?.message ||
+        "❌ Erreur lors de la validation"
+      )
     }
   }  
 
