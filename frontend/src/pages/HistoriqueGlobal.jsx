@@ -764,14 +764,23 @@ function HistoriqueGlobal() {
 
                     monthlyPointages.reduce((acc, p) => {
 
-                      const employeeKey =
-                        `${p.firstName} ${p.lastName}`
+                      const employeeKey = `
+                      ${p.firstName || ""}
+                      ${p.lastName || ""}
+                      `
+                      .trim()
+                      .toLowerCase()
+                      .replace(/\s+/g, " ")
 
                       if (!acc[employeeKey]) {
 
                         acc[employeeKey] = {
-                          employee:
-                            `${p.firstName} ${p.lastName}`,
+                          employee: `
+                          ${p.firstName || ""}
+                          ${p.lastName || ""}
+                          `
+                          .trim()
+                          .replace(/\s+/g, " "),
                           presences: 0,
                           absences: 0,
                           retards: 0,
