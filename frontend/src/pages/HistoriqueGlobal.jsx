@@ -366,6 +366,27 @@ function HistoriqueGlobal() {
         {/* ONGLETS */}
         <div className="flex gap-3">
 
+        <button
+           onClick={() =>
+           navigate("/historique-paiements")
+          }
+            className="
+            bg-blue-600
+            text-white
+            px-6
+            py-3
+            rounded-2xl
+            hover:scale-105
+            transition
+            flex
+            items-center
+            gap-2
+            "
+          >
+        <FaCalendarAlt />
+       Historique Paiements
+        </button>
+
           <button
             onClick={() => setTab("history")}
             className={`px-5 py-3 rounded-2xl text-sm flex items-center gap-2 transition ${
