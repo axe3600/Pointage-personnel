@@ -95,11 +95,28 @@ function HistoriqueGlobal() {
   const monthlyPointages = pointages.filter((p) => {
 
     const d = new Date(p.date)
-
+  
+    // 🔥 NOM COMPLET
+    const fullName = `
+      ${p.firstName || ""}
+      ${p.lastName || ""}
+    `
+    .trim()
+    .replace(/\s+/g, " ")
+  
+    // 🔥 IGNORER LIGNES VIDES
+    if (
+      !fullName ||
+      fullName === "undefined undefined"
+    ) {
+      return false
+    }
+  
     return (
       d.getMonth() === Number(selectedMonth) &&
       d.getFullYear() === Number(selectedYear)
     )
+  
   })
 
   // =========================
