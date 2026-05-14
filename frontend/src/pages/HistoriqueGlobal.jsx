@@ -13,7 +13,8 @@ import {
   FaArrowLeft,
   FaFilePdf,
   FaFileExcel,
-  FaCheckCircle
+  FaCheckCircle,
+  FaTrash
 } from "react-icons/fa"
 
 function HistoriqueGlobal() {
@@ -267,6 +268,36 @@ function HistoriqueGlobal() {
       )
     }
   }  
+
+// =========================
+// 🔥 SUPPRIMER SALAIRES
+// =========================
+  const handleDeleteSalary = async (employeeName) => {
+
+    const confirmDelete = window.confirm(
+      `Supprimer les informations salariales de ${employeeName} ?`
+    )
+  
+    if (!confirmDelete) return
+  
+    try {
+  
+      await axios.delete(
+        `${API}/salaires/${employeeName}`
+      )
+  
+      alert("✅ Salaire supprimé avec succès")
+  
+      fetchData()
+  
+    } catch (err) {
+  
+      console.log(err)
+  
+      alert("❌ Erreur suppression")
+  
+    }
+  }
 
   return (
 
@@ -753,7 +784,9 @@ function HistoriqueGlobal() {
                     <th className="pb-4">Salaire base</th>
                     <th className="pb-4">Déductions</th>
                     <th className="pb-4">Salaire net</th>
-
+                    <th className="pb-4 text-center">
+                        Action
+                    </th>
                   </tr>
 
                 </thead>
@@ -889,6 +922,26 @@ function HistoriqueGlobal() {
                           {salaireNet.toFixed(2)} {currency}
                         </td>
 
+                        {/* ACTION */}
+                        <td className="text-center">
+                     <button
+                       onClick={() =>
+                        handleDeleteSalary(employee.employee)
+                      }
+                     className="
+                      bg-red-100
+                      hover:bg-red-500
+                      text-red-500
+                      hover:text-white
+                      p-3
+                      rounded-xl
+                      transition
+                      duration-300
+                      "
+                    >
+                      <FaTrash />
+                    </button>
+                       </td>
                       </tr>
 
                     )

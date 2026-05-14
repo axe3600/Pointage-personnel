@@ -71,4 +71,33 @@ router.post("/", async (req, res) => {
   }
 })
 
+// =========================
+// 🔥 SUPPRIMER SALAIRE
+// =========================
+router.delete("/:employee", async (req, res) => {
+
+  try {
+
+    const employee =
+      decodeURIComponent(req.params.employee)
+
+    await Salary.deleteMany({
+      employe: employee
+    })
+
+    res.status(200).json({
+      message: "Salaire supprimé"
+    })
+
+  } catch (err) {
+
+    console.log(err)
+
+    res.status(500).json({
+      message: "Erreur suppression"
+    })
+
+  }
+})
+
 export default router
