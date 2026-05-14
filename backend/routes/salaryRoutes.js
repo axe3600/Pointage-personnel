@@ -12,19 +12,19 @@ router.post("/", async (req, res) => {
 
     const salaries = req.body
 
-    // 🔥 VÉRIFICATION
+    // 🔥 VALIDATION
     if (!Array.isArray(salaries)) {
 
       return res.status(400).json({
         message:
           "Les données doivent être un tableau"
       })
+
     }
 
-    // 🔥 STOCKAGE DOUBLONS
+    // 🔥 DOUBLONS
     const duplicates = []
 
-    // 🔥 BOUCLE
     for (const salary of salaries) {
 
       const existingSalary =
@@ -40,19 +40,22 @@ router.post("/", async (req, res) => {
       if (existingSalary) {
 
         duplicates.push(
-          `${salary.employe}`
+          salary.employe
         )
+
       }
     }
 
-    // 🔥 SI DOUBLONS
+    // 🔥 SI DOUBLON
     if (duplicates.length > 0) {
 
       return res.status(400).json({
 
         message:
-        "Les salaires des employés sont déjà enregistrés pour cette période"
+          "Les salaires des employés sont déjà enregistrés pour cette période"
+
       })
+
     }
 
     // 🔥 INSERTION
@@ -63,27 +66,56 @@ router.post("/", async (req, res) => {
 
   } catch (err) {
 
-    console.log("Erreur salaires :", err)
+    console.log(
+      "Erreur salaires :",
+      err
+    )
 
     res.status(500).json({
       message: "Erreur serveur"
     })
+
   }
+
+})
+
+// =========================
+// 🔥 RECUPERER SALAIRES
+// =========================
+router.get("/", async (req, res) => {
+
+  try {
+
+    const salaires =
+      await Salary.find()
+      .sort({
+        datePaiement: -1
+      })
+
+    res.json(salaires)
+
+  } catch (err) {
+
+    console.log(err)
+
+    res.status(500).json({
+      message: "Erreur serveur"
+    })
+
+  }
+
 })
 
 // =========================
 // 🔥 SUPPRIMER SALAIRE
 // =========================
-router.delete("/:employee", async (req, res) => {
+router.delete("/:id", async (req, res) => {
 
   try {
 
-    const employee =
-      decodeURIComponent(req.params.employee)
-
-    await Salary.deleteMany({
-      employe: employee
-    })
+    await Salary.findByIdAndDelete(
+      req.params.id
+    )
 
     res.status(200).json({
       message: "Salaire supprimé"
@@ -98,6 +130,7 @@ router.delete("/:employee", async (req, res) => {
     })
 
   }
+
 })
 
 export default router

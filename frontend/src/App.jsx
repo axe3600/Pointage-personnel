@@ -4,6 +4,7 @@ import Dashboard from "./pages/Dashboard"
 import ScanPage from "./pages/ScanPage"
 import EmployeePage from "./pages/EmployeePage"
 import HistoriqueGlobal from "./pages/HistoriqueGlobal"
+import HistoriquePaiements from "./pages/HistoriquePaiements"
 
 function App() {
   return (
@@ -21,6 +22,9 @@ function App() {
 
         <Route path="/historique-global" element={<HistoriqueGlobal />}
 />
+           {/* 🔥 Historique de Paiements des employés */}
+<Route path="/historique-paiements" element={<HistoriquePaiements />} />
+      
       </Routes>
 
     </BrowserRouter>
