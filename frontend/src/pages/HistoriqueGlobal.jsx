@@ -274,6 +274,14 @@ function HistoriqueGlobal() {
 // =========================
   const handleDeleteSalary = async (employeeName) => {
 
+    if (
+      !employeeName ||
+      employeeName === "undefined undefined"
+    ) {
+      alert("❌ Employé invalide")
+      return
+    }
+
     const confirmDelete = window.confirm(
       `Supprimer les informations salariales de ${employeeName} ?`
     )
@@ -795,53 +803,65 @@ function HistoriqueGlobal() {
 
                   {Object.values(
 
-                    monthlyPointages.reduce((acc, p) => {
+monthlyPointages.reduce((acc, p) => {
 
-                      const employeeKey = `
-                      ${p.firstName || ""}
-                      ${p.lastName || ""}
-                      `
-                      .trim()
-                      .toLowerCase()
-                      .replace(/\s+/g, " ")
+  // 🔥 NOM COMPLET PROPRE
+  const fullName = `
+    ${p.firstName || ""}
+    ${p.lastName || ""}
+  `
+  .trim()
+  .replace(/\s+/g, " ")
 
-                      if (!acc[employeeKey]) {
+  // 🔥 IGNORER EMPLOYÉS INVALIDES
+  if (
+    !fullName ||
+    fullName === "undefined undefined"
+  ) {
+    return acc
+  }
 
-                        acc[employeeKey] = {
-                          employee: `
-                          ${p.firstName || ""}
-                          ${p.lastName || ""}
-                          `
-                          .trim()
-                          .replace(/\s+/g, " "),
-                          presences: 0,
-                          absences: 0,
-                          retards: 0,
-                          heures: 0
-                        }
-                      }
+  // 🔥 CLÉ UNIQUE
+  const employeeKey = fullName
+    .toLowerCase()
 
-                      if (
-                        p.status === "Présent" ||
-                        p.status === "En retard"
-                      ) {
-                        acc[employeeKey].presences += 1
-                      }
+  // 🔥 CRÉATION EMPLOYÉ
+  if (!acc[employeeKey]) {
 
-                      if (p.category === "absence") {
-                        acc[employeeKey].absences += 1
-                      }
+    acc[employeeKey] = {
+      employee: fullName,
+      presences: 0,
+      absences: 0,
+      retards: 0,
+      heures: 0
+    }
+  }
 
-                      if (p.status === "En retard") {
-                        acc[employeeKey].retards += 1
-                      }
+  // 🔥 PRÉSENCES
+  if (
+    p.status === "Présent" ||
+    p.status === "En retard"
+  ) {
+    acc[employeeKey].presences += 1
+  }
 
-                      acc[employeeKey].heures +=
-                        parseFloat(p.hours) || 0
+  // 🔥 ABSENCES
+  if (p.category === "absence") {
+    acc[employeeKey].absences += 1
+  }
 
-                      return acc
+  // 🔥 RETARDS
+  if (p.status === "En retard") {
+    acc[employeeKey].retards += 1
+  }
 
-                    }, {})
+  // 🔥 HEURES
+  acc[employeeKey].heures +=
+    parseFloat(p.hours) || 0
+
+  return acc
+
+}, {})
 
                   ).map((employee, i) => {
 
@@ -924,6 +944,10 @@ function HistoriqueGlobal() {
 
                         {/* ACTION */}
                         <td className="text-center">
+
+                        {employee.employee &&
+                        employee.employee !== "undefined undefined" && (
+
                      <button
                        onClick={() =>
                         handleDeleteSalary(employee.employee)
@@ -941,6 +965,7 @@ function HistoriqueGlobal() {
                     >
                       <FaTrash />
                     </button>
+                    )}
                        </td>
                       </tr>
 
