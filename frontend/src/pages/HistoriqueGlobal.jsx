@@ -287,7 +287,6 @@ const handleValidateSalaries = async () => {
 
       monthlyPointages.reduce((acc, p) => {
 
-        // 🔥 NOM COMPLET PROPRE
         const fullName =
           `${p.firstName || ""} ${p.lastName || ""}`
             .replace(/\s+/g, " ")
@@ -301,29 +300,19 @@ const handleValidateSalaries = async () => {
           return acc
         }
 
-        // 🔥 CLÉ UNIQUE
-        const employeeKey =
-          fullName.toLowerCase()
+        // 🔥 CRÉATION
+        if (!acc[fullName]) {
 
-        // 🔥 CRÉATION EMPLOYÉ
-        if (!acc[employeeKey]) {
-
-          acc[employeeKey] = {
-
+          acc[fullName] = {
             employe: fullName,
-
             mois: months[selectedMonth],
-
             annee: selectedYear,
-
             presences: 0,
-
             absences: 0,
-
             retards: 0,
-
             heures: 0
           }
+
         }
 
         // 🔥 PRÉSENCES
@@ -332,31 +321,37 @@ const handleValidateSalaries = async () => {
           p.status === "En retard"
         ) {
 
-          acc[employeeKey].presences += 1
+          acc[fullName].presences += 1
+
         }
 
         // 🔥 ABSENCES
         if (p.category === "absence") {
 
-          acc[employeeKey].absences += 1
+          acc[fullName].absences += 1
+
         }
 
         // 🔥 RETARDS
         if (p.status === "En retard") {
 
-          acc[employeeKey].retards += 1
+          acc[fullName].retards += 1
+
         }
 
         // 🔥 HEURES
-        acc[employeeKey].heures +=
+        acc[fullName].heures +=
           parseFloat(p.hours) || 0
 
         return acc
 
       }, {})
+
     )
 
+    // =========================
     // 🔥 CALCUL FINAL
+    // =========================
     const salairesData =
       groupedEmployees.map((employee) => {
 
@@ -372,66 +367,50 @@ const handleValidateSalaries = async () => {
           salaireBase - deductions
 
         return {
-
           ...employee,
-
-          employe:
-            employee.employe
-              .replace(/\s+/g, " ")
-              .trim(),
-
           tauxHoraire: hourSalary,
-
           salaireBase,
-
           deductions,
-
           salaireNet,
-
           devise: currency
         }
+
       })
 
-    // 🔥 ENVOI API
-    const response =
-      await axios.post(
-        `${API}/salaires`,
-        salairesData
-      )
+    // =========================
+    // 🔥 API
+    // =========================
+    const response = await axios.post(
+      `${API}/salaires`,
+      salairesData
+    )
 
-// 🔥 MESSAGE FINAL
-const inserted =
-  Number(response?.data?.inserted || 0)
+    // 🔥 DATA
+    const data = response.data
 
-const ignored =
-  Number(response?.data?.ignored || 0)
+    // =========================
+    // 🔥 MESSAGE SUCCESS
+    // =========================
+    alert(
+`✅ ${data.inserted} salaire(s) enregistré(s)
 
-// 🔥 SI DÉJÀ ENREGISTRÉ
-if (
-  inserted === 0 &&
-  ignored > 0
-) {
-
-  alert(
-    "Les salaires des employés sont déjà enregistrés pour cette période"
-  )
-
-} else {
-
-  alert(
-    `✅ ${inserted} salaire(s) enregistré(s)\n❌ ${ignored} ignoré(s)`
-  )
-}
+❌ ${data.ignored} ignoré(s)`
+    )
 
   } catch (err) {
 
     console.log(err)
 
+    // =========================
+    // 🔥 MESSAGE ERREUR
+    // =========================
     alert(
       err.response?.data?.message ||
       "❌ Erreur validation"
     )
+
   }
+
 }
 
 // =========================
