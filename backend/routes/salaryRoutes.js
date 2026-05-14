@@ -7,62 +7,118 @@ const router = express.Router()
 // 🔥 ENREGISTRER SALAIRES
 // =========================
 router.post("/", async (req, res) => {
-
   try {
 
     const salaries = req.body
 
-    // 🔥 VALIDATION
+    // =========================
+    // 🔥 VÉRIFICATION
+    // =========================
     if (!Array.isArray(salaries)) {
-
       return res.status(400).json({
         message:
           "Les données doivent être un tableau"
       })
-
     }
 
-    // 🔥 DOUBLONS
+    // =========================
+    // 🔥 TABLEAUX
+    // =========================
+    const newSalaries = []
     const duplicates = []
 
+    // =========================
+    // 🔥 BOUCLE
+    // =========================
     for (const salary of salaries) {
 
+      // 🔥 NOM PROPRE
+      const cleanName =
+        salary.employe
+          ?.replace(/\s+/g, " ")
+          .trim()
+
+      // ❌ IGNORER INVALIDES
+      if (
+        !cleanName ||
+        cleanName === "undefined undefined"
+      ) {
+        continue
+      }
+
+      // =========================
+      // 🔥 RECHERCHE DOUBLON
+      // =========================
       const existingSalary =
         await Salary.findOne({
-
-          employe: salary.employe,
+          employe: cleanName,
           mois: salary.mois,
           annee: salary.annee
-
         })
 
+      // =========================
       // 🔥 SI EXISTE
+      // =========================
       if (existingSalary) {
 
-        duplicates.push(
-          salary.employe
-        )
+        duplicates.push({
+          employe: cleanName
+        })
+
+      } else {
+
+        // =========================
+        // 🔥 AJOUT PROPRE
+        // =========================
+        newSalaries.push({
+          ...salary,
+          employe: cleanName
+        })
 
       }
     }
 
-    // 🔥 SI DOUBLON
-    if (duplicates.length > 0) {
+    // =========================
+    // 🔥 INSERTION
+    // =========================
+    if (newSalaries.length > 0) {
+
+      await Salary.insertMany(
+        newSalaries
+      )
+
+    }
+
+    // =========================
+    // 🔥 SI TOUT DÉJÀ EXISTE
+    // =========================
+    if (
+      newSalaries.length === 0 &&
+      duplicates.length > 0
+    ) {
 
       return res.status(400).json({
-
         message:
-          "Les salaires des employés sont déjà enregistrés pour cette période"
-
+          "Les salaires des employés sont déjà enregistrés pour cette période",
+        inserted: 0,
+        ignored: duplicates.length,
+        duplicates
       })
 
     }
 
-    // 🔥 INSERTION
-    const saved =
-      await Salary.insertMany(salaries)
-
-    res.status(201).json(saved)
+    // =========================
+    // 🔥 RÉPONSE SUCCESS
+    // =========================
+    res.status(201).json({
+      message:
+        "Validation terminée",
+      inserted:
+        newSalaries.length,
+      ignored:
+        duplicates.length,
+      duplicates
+    })
 
   } catch (err) {
 
@@ -72,25 +128,24 @@ router.post("/", async (req, res) => {
     )
 
     res.status(500).json({
-      message: "Erreur serveur"
+      message:
+        "Erreur serveur"
     })
 
   }
-
 })
 
 // =========================
 // 🔥 RECUPERER SALAIRES
 // =========================
 router.get("/", async (req, res) => {
-
   try {
 
     const salaires =
       await Salary.find()
-      .sort({
-        datePaiement: -1
-      })
+        .sort({
+          datePaiement: -1
+        })
 
     res.json(salaires)
 
@@ -103,14 +158,12 @@ router.get("/", async (req, res) => {
     })
 
   }
-
 })
 
 // =========================
 // 🔥 SUPPRIMER SALAIRE
 // =========================
 router.delete("/:id", async (req, res) => {
-
   try {
 
     await Salary.findByIdAndDelete(
@@ -130,7 +183,6 @@ router.delete("/:id", async (req, res) => {
     })
 
   }
-
 })
 
 export default router

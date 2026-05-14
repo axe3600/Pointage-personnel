@@ -48,12 +48,54 @@ function HistoriqueGlobal() {
   // =========================
   // 🔥 PARAMÈTRES SALAIRES
   // =========================
-  const [absenceDeduction, setAbsenceDeduction] = useState(100)
-  const [retardDeduction, setRetardDeduction] = useState(10)
-  const [hourSalary, setHourSalary] = useState(15)
+  const [absenceDeduction, setAbsenceDeduction] =
+  useState(() => {
+
+    const saved =
+      localStorage.getItem(
+        "absenceDeduction"
+      )
+
+    return saved !== null
+      ? Number(saved)
+      : 100
+  })
+
+const [retardDeduction, setRetardDeduction] =
+  useState(() => {
+
+    const saved =
+      localStorage.getItem(
+        "retardDeduction"
+      )
+
+    return saved !== null
+      ? Number(saved)
+      : 10
+  })
+
+const [hourSalary, setHourSalary] =
+  useState(() => {
+
+    const saved =
+      localStorage.getItem(
+        "hourSalary"
+      )
+
+    return saved !== null
+      ? Number(saved)
+      : 15
+  })
 
   // 🔥 DEVISE
-  const [currency, setCurrency] = useState("FCFA")
+const [currency, setCurrency] =
+  useState(() => {
+
+    return (
+      localStorage.getItem("currency")
+      || "FCFA"
+    )
+  })
 
   // =========================
   // 🔥 API
@@ -66,6 +108,38 @@ function HistoriqueGlobal() {
   useEffect(() => {
     fetchData()
   }, [])
+
+// =========================
+// 🔥 SAUVEGARDE PARAMÈTRES
+// =========================
+useEffect(() => {
+
+  localStorage.setItem(
+    "absenceDeduction",
+    absenceDeduction
+  )
+
+  localStorage.setItem(
+    "retardDeduction",
+    retardDeduction
+  )
+
+  localStorage.setItem(
+    "hourSalary",
+    hourSalary
+  )
+
+  localStorage.setItem(
+    "currency",
+    currency
+  )
+
+}, [
+  absenceDeduction,
+  retardDeduction,
+  hourSalary,
+  currency
+])
 
   // =========================
   // 🔥 FETCH
@@ -204,87 +278,161 @@ function HistoriqueGlobal() {
 // =========================
 // 🔥 VALIDER SALAIRES
 // =========================
-  const handleValidateSalaries = async () => {
+const handleValidateSalaries = async () => {
 
-    try {
-  
-      const salairesData = Object.values(
-        monthlyPointages.reduce((acc, p) => {
-  
-          const employeeKey = `${p.firstName} ${p.lastName}`
-  
-          if (!acc[employeeKey]) {
-            acc[employeeKey] = {
-              employe: employeeKey,
-              mois: months[selectedMonth],
-              annee: selectedYear,
-              presences: 0,
-              absences: 0,
-              retards: 0,
-              heures: 0
-            }
-          }
-  
-          if (
-            p.status === "Présent" ||
-            p.status === "En retard"
-          ) {
-            acc[employeeKey].presences += 1
-          }
-  
-          if (p.category === "absence") {
-            acc[employeeKey].absences += 1
-          }
-  
-          if (p.status === "En retard") {
-            acc[employeeKey].retards += 1
-          }
-  
-          acc[employeeKey].heures +=
-            parseFloat(p.hours) || 0
-  
+  try {
+
+    // 🔥 FUSION EMPLOYÉS
+    const groupedEmployees = Object.values(
+
+      monthlyPointages.reduce((acc, p) => {
+
+        // 🔥 NOM COMPLET PROPRE
+        const fullName =
+          `${p.firstName || ""} ${p.lastName || ""}`
+            .replace(/\s+/g, " ")
+            .trim()
+
+        // ❌ IGNORER INVALIDES
+        if (
+          !fullName ||
+          fullName === "undefined undefined"
+        ) {
           return acc
-  
-        }, {})
-      ).map((employee) => {
-  
+        }
+
+        // 🔥 CLÉ UNIQUE
+        const employeeKey =
+          fullName.toLowerCase()
+
+        // 🔥 CRÉATION EMPLOYÉ
+        if (!acc[employeeKey]) {
+
+          acc[employeeKey] = {
+
+            employe: fullName,
+
+            mois: months[selectedMonth],
+
+            annee: selectedYear,
+
+            presences: 0,
+
+            absences: 0,
+
+            retards: 0,
+
+            heures: 0
+          }
+        }
+
+        // 🔥 PRÉSENCES
+        if (
+          p.status === "Présent" ||
+          p.status === "En retard"
+        ) {
+
+          acc[employeeKey].presences += 1
+        }
+
+        // 🔥 ABSENCES
+        if (p.category === "absence") {
+
+          acc[employeeKey].absences += 1
+        }
+
+        // 🔥 RETARDS
+        if (p.status === "En retard") {
+
+          acc[employeeKey].retards += 1
+        }
+
+        // 🔥 HEURES
+        acc[employeeKey].heures +=
+          parseFloat(p.hours) || 0
+
+        return acc
+
+      }, {})
+    )
+
+    // 🔥 CALCUL FINAL
+    const salairesData =
+      groupedEmployees.map((employee) => {
+
         const salaireBase =
           employee.heures * hourSalary
-  
+
         const deductions =
-          (employee.absences * absenceDeduction) +
+          (employee.absences * absenceDeduction)
+          +
           (employee.retards * retardDeduction)
-  
+
         const salaireNet =
           salaireBase - deductions
-  
+
         return {
+
           ...employee,
+
+          employe:
+            employee.employe
+              .replace(/\s+/g, " ")
+              .trim(),
+
           tauxHoraire: hourSalary,
+
           salaireBase,
+
           deductions,
+
           salaireNet,
+
           devise: currency
         }
       })
-  
+
+    // 🔥 ENVOI API
+    const response =
       await axios.post(
         `${API}/salaires`,
         salairesData
       )
-  
-      alert("✅ Salaires validés avec succès")
-  
-    } catch (err) {
 
-      console.log(err)
-    
-      alert(
-        err.response?.data?.message ||
-        "❌ Erreur lors de la validation"
-      )
-    }
-  }  
+// 🔥 MESSAGE FINAL
+const inserted =
+  Number(response?.data?.inserted || 0)
+
+const ignored =
+  Number(response?.data?.ignored || 0)
+
+// 🔥 SI DÉJÀ ENREGISTRÉ
+if (
+  inserted === 0 &&
+  ignored > 0
+) {
+
+  alert(
+    "Les salaires des employés sont déjà enregistrés pour cette période"
+  )
+
+} else {
+
+  alert(
+    `✅ ${inserted} salaire(s) enregistré(s)\n❌ ${ignored} ignoré(s)`
+  )
+}
+
+  } catch (err) {
+
+    console.log(err)
+
+    alert(
+      err.response?.data?.message ||
+      "❌ Erreur validation"
+    )
+  }
+}
 
 // =========================
 // 🔥 SUPPRIMER SALAIRES
@@ -844,12 +992,10 @@ function HistoriqueGlobal() {
 monthlyPointages.reduce((acc, p) => {
 
   // 🔥 NOM COMPLET PROPRE
-  const fullName = `
-    ${p.firstName || ""}
-    ${p.lastName || ""}
-  `
-  .trim()
-  .replace(/\s+/g, " ")
+  const fullName =
+  `${p.firstName || ""} ${p.lastName || ""}`
+    .replace(/\s+/g, " ")
+    .trim()
 
   // 🔥 IGNORER EMPLOYÉS INVALIDES
   if (
