@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react"
 import axios from "axios"
 import { useNavigate } from "react-router-dom"
+import jsPDF from "jspdf"
+import autoTable from "jspdf-autotable"
+import * as XLSX from "xlsx"
+import { saveAs } from "file-saver"
 
 import {
     FaArrowLeft,
@@ -83,6 +87,88 @@ function HistoriquePaiements() {
     fetchSalaires()
 
   }, [])
+
+  // 🔥 Données exporté en pdf
+  const exportPDF = () => {
+
+    const doc = new jsPDF()
+  
+    doc.text(
+      "Historique des Paiements",
+      14,
+      15
+    )
+  
+    const tableData = salaires.map((s) => [
+      s.employe,
+      s.mois,
+      s.annee,
+      s.salaireNet?.toFixed(2),
+      s.devise,
+      s.statut
+    ])
+  
+    autoTable(doc, {
+      startY: 25,
+      head: [[
+        "Employé",
+        "Mois",
+        "Année",
+        "Salaire Net",
+        "Devise",
+        "Statut"
+      ]],
+      body: tableData
+    })
+  
+    doc.save("historique-paiements.pdf")
+  
+  }
+
+  // 🔥 Données exporté en excel
+  const exportExcel = () => {
+
+    const excelData = salaires.map((s) => ({
+      Employe: s.employe,
+      Mois: s.mois,
+      Annee: s.annee,
+      SalaireNet: s.salaireNet,
+      Devise: s.devise,
+      Statut: s.statut
+    }))
+  
+    const worksheet =
+      XLSX.utils.json_to_sheet(excelData)
+  
+    const workbook =
+      XLSX.utils.book_new()
+  
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Paiements"
+    )
+  
+    const excelBuffer =
+      XLSX.write(workbook, {
+        bookType: "xlsx",
+        type: "array"
+      })
+  
+    const data = new Blob(
+      [excelBuffer],
+      {
+        type:
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8"
+      }
+    )
+  
+    saveAs(
+      data,
+      "historique-paiements.xlsx"
+    )
+  
+  }  
 
   return (
 
@@ -366,12 +452,12 @@ function HistoriquePaiements() {
 
             <div className="flex gap-4 flex-wrap">
 
-              <button className="bg-red-500 text-white px-6 py-3 rounded-2xl hover:scale-105 transition flex items-center gap-2">
+              <button onClick={exportPDF} className="bg-red-500 text-white px-6 py-3 rounded-2xl hover:scale-105 transition flex items-center gap-2">
                 <FaFilePdf />
                 Exporter PDF
               </button>
 
-              <button className="bg-green-600 text-white px-6 py-3 rounded-2xl hover:scale-105 transition flex items-center gap-2">
+              <button onClick={exportExcel} className="bg-green-600 text-white px-6 py-3 rounded-2xl hover:scale-105 transition flex items-center gap-2">
                 <FaFileExcel />
                 Exporter Excel
               </button>

@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react"
 import axios from "axios"
 import { useNavigate } from "react-router-dom"
+import jsPDF from "jspdf"
+import autoTable from "jspdf-autotable"
+import * as XLSX from "xlsx"
+import { saveAs } from "file-saver"
 
 // 🔥 ICÔNES
 import {
@@ -449,6 +453,183 @@ const handleValidateSalaries = async () => {
       alert("❌ Erreur suppression")
   
     }
+  }
+
+// =========================
+// 🔥 DONNÉES EMPLOYÉS
+// =========================
+  const employeesData = Object.values(
+    monthlyPointages.reduce((acc, p) => {
+  
+      const fullName =
+        `${p.firstName || ""} ${p.lastName || ""}`
+          .replace(/\s+/g, " ")
+          .trim()
+  
+      if (
+        !fullName ||
+        fullName === "undefined undefined"
+      ) {
+        return acc
+      }
+  
+      const employeeKey =
+        fullName.toLowerCase()
+  
+      if (!acc[employeeKey]) {
+  
+        acc[employeeKey] = {
+          employee: fullName,
+          presences: 0,
+          absences: 0,
+          retards: 0,
+          heures: 0
+        }
+  
+      }
+  
+      if (
+        p.status === "Présent" ||
+        p.status === "En retard"
+      ) {
+        acc[employeeKey].presences += 1
+      }
+  
+      if (p.category === "absence") {
+        acc[employeeKey].absences += 1
+      }
+  
+      if (p.status === "En retard") {
+        acc[employeeKey].retards += 1
+      }
+  
+      acc[employeeKey].heures +=
+        parseFloat(p.hours) || 0
+  
+      return acc
+  
+    }, {})
+  )
+
+  // 🔥 Données exporté en pdf
+  const exportPDF = () => {
+
+    const doc = new jsPDF()
+  
+    doc.text(
+      `Rapport Salarial - ${months[selectedMonth]} ${selectedYear}`,
+      14,
+      15
+    )
+  
+    const tableData = employeesData.map((employee) => {
+  
+      const salaireBase =
+        employee.heures * hourSalary
+  
+      const deductions =
+        (employee.absences * absenceDeduction)
+        +
+        (employee.retards * retardDeduction)
+  
+      const salaireNet =
+        salaireBase - deductions
+  
+      return [
+        employee.employee,
+        employee.presences,
+        employee.absences,
+        employee.retards,
+        employee.heures.toFixed(2),
+        salaireBase.toFixed(2),
+        deductions.toFixed(2),
+        salaireNet.toFixed(2)
+      ]
+  
+    })
+  
+    autoTable(doc, {
+      startY: 25,
+      head: [[
+        "Employé",
+        "Présences",
+        "Absences",
+        "Retards",
+        "Heures",
+        "Salaire Base",
+        "Déductions",
+        "Salaire Net"
+      ]],
+      body: tableData
+    })
+  
+    doc.save(
+      `salaires-${months[selectedMonth]}-${selectedYear}.pdf`
+    )
+  
+  }
+
+  // 🔥 Données exporté en excel  
+  const exportExcel = () => {
+
+    const excelData = employeesData.map((employee) => {
+  
+      const salaireBase =
+        employee.heures * hourSalary
+  
+      const deductions =
+        (employee.absences * absenceDeduction)
+        +
+        (employee.retards * retardDeduction)
+  
+      const salaireNet =
+        salaireBase - deductions
+  
+      return {
+        Employe: employee.employee,
+        Presences: employee.presences,
+        Absences: employee.absences,
+        Retards: employee.retards,
+        Heures: employee.heures.toFixed(2),
+        SalaireBase: salaireBase.toFixed(2),
+        Deductions: deductions.toFixed(2),
+        SalaireNet: salaireNet.toFixed(2),
+        Devise: currency
+      }
+  
+    })
+  
+    const worksheet =
+      XLSX.utils.json_to_sheet(excelData)
+  
+    const workbook =
+      XLSX.utils.book_new()
+  
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Salaires"
+    )
+  
+    const excelBuffer =
+      XLSX.write(workbook, {
+        bookType: "xlsx",
+        type: "array"
+      })
+  
+    const data = new Blob(
+      [excelBuffer],
+      {
+        type:
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8"
+      }
+    )
+  
+    saveAs(
+      data,
+      `salaires-${months[selectedMonth]}-${selectedYear}.xlsx`
+    )
+  
   }
 
   return (
@@ -1161,13 +1342,19 @@ monthlyPointages.reduce((acc, p) => {
                Valider les salaires
             </button>
 
-              <button className="bg-red-500 text-white px-6 py-3 rounded-2xl hover:scale-105 transition flex items-center gap-2">
+            <button
+              onClick={exportPDF}
+              className="bg-red-500 text-white px-6 py-3 rounded-2xl hover:scale-105 transition flex items-center gap-2"
+            >     
                 <FaFilePdf />
                 Exporter PDF
               </button>
 
-              <button className="bg-green-600 text-white px-6 py-3 rounded-2xl hover:scale-105 transition flex items-center gap-2">
-                <FaFileExcel />
+              <button
+                onClick={exportExcel}
+                className="bg-green-600 text-white px-6 py-3 rounded-2xl hover:scale-105 transition flex items-center gap-2"
+            >    
+                 <FaFileExcel />
                 Exporter Excel
               </button>
 
