@@ -3,11 +3,13 @@ import axios from "axios"
 import { useNavigate } from "react-router-dom"
 
 import {
-  FaArrowLeft,
-  FaMoneyCheckAlt,
-  FaTrash,
-  FaCalendarAlt
-} from "react-icons/fa"
+    FaArrowLeft,
+    FaMoneyCheckAlt,
+    FaTrash,
+    FaCalendarAlt,
+    FaFilePdf,
+    FaFileExcel
+  } from "react-icons/fa"
 
 function HistoriquePaiements() {
 
@@ -354,6 +356,29 @@ function HistoriquePaiements() {
         </div>
 
       </div>
+<br/>
+          {/* ACTIONS */}
+          <div className="bg-white rounded-3xl p-6 shadow-lg border">
+
+            <h2 className="font-bold text-xl mb-6">
+              Actions
+            </h2>
+
+            <div className="flex gap-4 flex-wrap">
+
+              <button className="bg-red-500 text-white px-6 py-3 rounded-2xl hover:scale-105 transition flex items-center gap-2">
+                <FaFilePdf />
+                Exporter PDF
+              </button>
+
+              <button className="bg-green-600 text-white px-6 py-3 rounded-2xl hover:scale-105 transition flex items-center gap-2">
+                <FaFileExcel />
+                Exporter Excel
+              </button>
+
+            </div>
+
+          </div>
 
     </div>
   )
