@@ -227,7 +227,57 @@ useEffect(() => {
     p => p.status === "En retard"
   ).length
 
-  const conges = monthlyLeaves.length
+const conges = monthlyLeaves.length
+
+// =========================
+// 🔥 HISTORIQUE COMPLET
+// =========================
+const historiqueComplet = [
+
+  // 🔥 POINTAGES
+  ...monthlyPointages.map((p) => ({
+
+    date: p.date,
+
+    employe:
+      `${p.firstName || ""} ${p.lastName || ""}`
+        .replace(/\s+/g, " ")
+        .trim(),
+
+    status:
+      p.category === "absence"
+        ? "Absent"
+        : p.status,
+
+    arrival: p.arrival || "-",
+
+    departure: p.departure || "-"
+
+  })),
+
+  // 🔥 CONGÉS
+  ...monthlyLeaves.map((l) => ({
+
+    date: l.date,
+
+    employe:
+      `${l.firstName || ""} ${l.lastName || ""}`
+        .replace(/\s+/g, " ")
+        .trim(),
+
+    status: "Congé",
+
+    arrival: "-",
+
+    departure: "-"
+
+  }))
+
+].sort(
+  (a, b) =>
+    new Date(b.date) - new Date(a.date)
+)
+
 
   // =========================
   // 🔥 CALCULS
@@ -868,7 +918,7 @@ const handleValidateSalaries = async () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {monthlyPointages.map((p, i) => (
+                {historiqueComplet.map((p, i) => (
                     <tr
                       key={i}
                       className="border-b hover:bg-gray-50 transition"
@@ -877,25 +927,29 @@ const handleValidateSalaries = async () => {
                         {new Date(p.date).toLocaleDateString()}
                       </td>
                       <td className="font-medium">
-                        {p.firstName} {p.lastName}
+                         {p.employe}
                       </td>
                       <td>
-                        {p.category === "absence" ? (
-                          <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs">
+                      {p.status === "Congé" ? (
+                      <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs">
+                           Congé
+                      </span>
+                      ) : p.status === "Absent" ? (
+                      <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs">
                             Absent
-                          </span>
-                        ) : p.status === "En retard" ? (
-                          <span className="bg-orange-100 text-orange-500 px-3 py-1 rounded-full text-xs">
-                            En retard
-                          </span>
-                        ) : (
-                          <span className="bg-green-100 text-green-600 px-3 py-1 rounded-full text-xs">
-                            Présent
-                          </span>
-                        )}
+                      </span>
+                      ) : p.status === "En retard" ? (
+                      <span className="bg-orange-100 text-orange-500 px-3 py-1 rounded-full text-xs">
+                              En retard
+                      </span>
+                      ) : (
+                      <span className="bg-green-100 text-green-600 px-3 py-1 rounded-full text-xs">
+                             Présent
+                      </span>
+                     )}
                       </td>
-                      <td>{p.arrival || "-"}</td>
-                      <td>{p.departure || "-"}</td>
+                      <td>{p.arrival}</td>
+                      <td>{p.departure}</td>
                     </tr>
                   ))}
                 </tbody>
